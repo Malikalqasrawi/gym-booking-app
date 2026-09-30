@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gym_booking/utils/validators.dart';
 
-/// Unit tests: run with  flutter test
 void main() {
   group('Validators.password', () {
     test('rejects short passwords', () {

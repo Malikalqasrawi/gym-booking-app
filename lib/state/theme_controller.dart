@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Remembers light / dark mode and tells the app to rebuild when it changes.
+/// The user's light/dark mode choice, persisted in shared_preferences.
 class ThemeController extends ChangeNotifier {
   static const _key = 'theme_mode';
 
-  ThemeMode _mode = ThemeMode.system;   // follow the phone's setting until the user chooses
+  ThemeMode _mode = ThemeMode.system;
 
   ThemeMode get mode => _mode;
 
-  /// Read the saved choice when the app starts.
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getString(_key);
@@ -19,7 +18,7 @@ class ThemeController extends ChangeNotifier {
     );
   }
 
-  /// Switch to the opposite of what's on screen right now.
+  /// Switches to the opposite of the brightness currently on screen.
   Future<void> toggle(Brightness currentBrightness) async {
     _mode = currentBrightness == Brightness.dark ? ThemeMode.light : ThemeMode.dark;
     notifyListeners();

@@ -4,7 +4,6 @@ import '../models/booking.dart';
 import '../utils/dates.dart';
 import '../utils/money.dart';
 
-/// A small coloured label: "Waiting for trainer", "Awaiting payment", "Confirmed", "Declined"...
 class BookingStatusChip extends StatelessWidget {
   const BookingStatusChip({super.key, required this.status});
 
@@ -15,7 +14,6 @@ class BookingStatusChip extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final dark = Theme.of(context).brightness == Brightness.dark;
 
-    // (background, text colour, icon) for each status
     final (Color bg, Color fg, IconData icon) = switch (status) {
       BookingStatus.requested => (scheme.tertiaryContainer, scheme.onTertiaryContainer, Icons.hourglass_top),
       BookingStatus.accepted => (scheme.secondaryContainer, scheme.onSecondaryContainer, Icons.credit_card),
@@ -42,10 +40,7 @@ class BookingStatusChip extends StatelessWidget {
   }
 }
 
-/// One booking as a card. Used by the member's "My bookings" and the trainer's "Requests" screens.
-///
-/// [showMember]: true on the trainer's screens (show who booked), false for members (show the trainer).
-/// [actions]: buttons at the bottom (Pay, Cancel, Accept, Decline...). Empty = no button row.
+/// Set [showMember] on trainer screens to show the member instead of the trainer.
 class BookingCard extends StatelessWidget {
   const BookingCard({
     super.key,
@@ -109,7 +104,6 @@ class BookingCard extends StatelessWidget {
                 style: muted.copyWith(fontSize: 12),
               ),
             ],
-            // Accepted, not paid yet
             if (booking.status == BookingStatus.accepted && booking.payBy != null) ...[
               const SizedBox(height: 8),
               Text(
@@ -119,7 +113,6 @@ class BookingCard extends StatelessWidget {
                 style: TextStyle(fontSize: 12, color: scheme.primary, fontWeight: FontWeight.w600),
               ),
             ],
-            // The receipt (members only)
             if (payment != null) ...[
               const SizedBox(height: 8),
               _Line(
@@ -129,7 +122,6 @@ class BookingCard extends StatelessWidget {
                     : 'Paid ${formatJod(payment.amount)} · ${payment.method}',
               ),
             ],
-            // Paid: until when can it still be cancelled?
             if (booking.status == BookingStatus.paid && !showMember)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
@@ -146,8 +138,7 @@ class BookingCard extends StatelessWidget {
                 children: [
                   for (final (index, action) in actions.indexed) ...[
                     if (index > 0) const SizedBox(width: 8),
-                    // Expanded: our theme makes buttons as wide as possible (Size.fromHeight = infinite width).
-                    // Inside a Row that's impossible, so each button gets an equal share of the row instead.
+                    // The theme's buttons have infinite minimum width, which a Row can't lay out.
                     Expanded(child: action),
                   ],
                 ],

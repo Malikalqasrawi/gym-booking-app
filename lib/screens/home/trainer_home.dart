@@ -8,12 +8,6 @@ import '../../utils/dates.dart';
 import '../../widgets/trainer_avatar.dart';
 import '../trainer/trainer_requests_screen.dart';
 
-/// The trainer's part of the home screen:
-///   1. Three numbers: requests waiting, sessions today, upcoming sessions
-///   2. Today's sessions
-///   3. A button into the Requests / Schedule screen
-///
-/// Uses GET /api/trainer/requests and GET /api/trainer/schedule (the lists already exist).
 class TrainerHome extends StatefulWidget {
   const TrainerHome({super.key});
 
@@ -22,7 +16,7 @@ class TrainerHome extends StatefulWidget {
 }
 
 class _TrainerHomeState extends State<TrainerHome> {
-  /// Both lists at once: [requests, schedule]. Kept in a field so rebuilding doesn't reload.
+  /// [requests, schedule]. Kept in a field so rebuilds don't refetch.
   late Future<List<List<Booking>>> _data;
 
   @override
@@ -39,7 +33,7 @@ class _TrainerHomeState extends State<TrainerHome> {
   Future<void> _openRequests() async {
     await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TrainerRequestsScreen()));
     if (!mounted) return;
-    setState(_load); // they may have accepted or declined something
+    setState(_load); // requests may have been answered there
   }
 
   @override
@@ -113,14 +107,13 @@ class _TrainerHomeState extends State<TrainerHome> {
   }
 }
 
-/// A number with a label, e.g. "3 / waiting for you".
 class _Stat extends StatelessWidget {
   const _Stat({required this.value, required this.label, required this.icon, this.highlight = false});
 
   final int value;
   final String label;
   final IconData icon;
-  final bool highlight; // coloured when there's something to do
+  final bool highlight;
 
   @override
   Widget build(BuildContext context) {
@@ -144,7 +137,6 @@ class _Stat extends StatelessWidget {
   }
 }
 
-/// "10:00 – 11:00   Malik   60 min"
 class _TodayRow extends StatelessWidget {
   const _TodayRow({required this.booking});
 

@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../utils/messages.dart';
 
-/// "or continue with" + Google and Apple buttons.
-/// They're placeholders in Stage 1. Google gets wired up in Stage 6.
-/// (Apple sign-in requires a paid Apple Developer account.)
+// TODO: implement Google sign-in.
+
+/// Placeholder Google and Apple sign-in buttons. Apple sign-in requires a paid
+/// Apple Developer account.
 class SocialSignInButtons extends StatelessWidget {
   const SocialSignInButtons({super.key});
 
@@ -31,7 +32,7 @@ class SocialSignInButtons extends StatelessWidget {
               child: OutlinedButton.icon(
                 icon: const Icon(Icons.g_mobiledata, size: 30),
                 label: const Text('Google'),
-                onPressed: () => showInfo(context, 'Google sign-in is coming in Stage 6'),
+                onPressed: () => showInfo(context, 'Google sign-in is coming soon'),
               ),
             ),
             const SizedBox(width: 12),

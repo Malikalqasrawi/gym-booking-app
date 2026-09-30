@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -13,9 +14,6 @@ import '../../utils/validators.dart';
 import '../../widgets/auth_header.dart';
 import '../../widgets/theme_toggle_button.dart';
 
-/// Screen 2: type the 6-digit code that was emailed.
-///
-/// Flow:  POST /api/auth/verify → backend returns a token → we're logged in → Home
 class VerifyEmailScreen extends StatefulWidget {
   const VerifyEmailScreen({super.key, required this.email});
 
@@ -48,7 +46,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
     super.dispose();
   }
 
-  /// Counts down 30 → 0 so the user can't spam "Resend".
+  /// Disables Resend for a short cooldown so the endpoint isn't spammed.
   void _startResendTimer() {
     _timer?.cancel();
     _secondsLeft = _resendWaitSeconds;
@@ -74,12 +72,11 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
         email: widget.email,
         code: _codeController.text,
       );
-      // Save token + user. AuthGate (under this screen) switches to HomeScreen.
       await session.startSession(result);
-      // Remove this screen so HomeScreen becomes visible.
+      // AuthGate, below this route, now shows HomeScreen.
       navigator.popUntil((route) => route.isFirst);
     } on ApiException catch (e) {
-      if (mounted) showError(context, e.message);   // "The code is not correct" / "The code has expired"
+      if (mounted) showError(context, e.message);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -152,12 +149,14 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Development tip: the code is printed in the NetBeans Output window.',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: muted),
-                ),
+                if (kDebugMode) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'Debug build: with console email mode, the code is printed in the backend log.',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: muted),
+                  ),
+                ],
               ],
             ),
           ),

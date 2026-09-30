@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 
-/// A password text field with an eye button to show / hide the text.
 class PasswordField extends StatefulWidget {
   const PasswordField({
     super.key,

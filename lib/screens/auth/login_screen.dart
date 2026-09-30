@@ -14,12 +14,6 @@ import '../../widgets/social_sign_in_buttons.dart';
 import '../../widgets/theme_toggle_button.dart';
 import 'verify_email_screen.dart';
 
-/// Screen 3: log in with email + password (Google / Apple buttons are placeholders for now).
-///
-/// Flow:  POST /api/auth/login
-///          ✅ 200 → save token → Home
-///          ❌ 403 EMAIL_NOT_VERIFIED → send a new code → VerifyEmailScreen
-///          ❌ 401 → "Email or password is incorrect"
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key, required this.onSwitchToSignUp});
 
@@ -53,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _loading = true);
     try {
       final result = await authApi.login(email: email, password: _passwordController.text);
-      await session.startSession(result);   // AuthGate switches to HomeScreen
+      await session.startSession(result); // AuthGate then shows HomeScreen
     } on ApiException catch (e) {
       if (!mounted) return;
       if (e.code == 'EMAIL_NOT_VERIFIED') {
@@ -66,7 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  /// The account exists but the email was never verified: send a fresh code and ask for it.
+  /// The account exists but isn't verified: send a fresh code and open the verification screen.
   Future<void> _goVerify(AuthApi authApi, String email) async {
     try {
       await authApi.resendCode(email);

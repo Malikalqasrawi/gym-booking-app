@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Icon + big title + subtitle at the top of the auth screens.
 class AuthHeader extends StatelessWidget {
   const AuthHeader({
     super.key,

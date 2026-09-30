@@ -1,6 +1,5 @@
-/// Form checks that run on the phone BEFORE calling the backend.
-/// They mirror the Java rules in SignUpRequest, so users see mistakes instantly.
-/// (The backend still checks again: never trust the app alone.)
+/// Client-side form validation mirroring the backend's SignUpRequest rules.
+/// The backend validates again.
 class Validators {
   static String? fullName(String? value) {
     if (value == null || value.trim().isEmpty) return 'Full name is required';
@@ -44,6 +43,5 @@ class Validators {
     return null;
   }
 
-  /// "+962 79 123 4567" → "+962791234567"
   static String cleanPhone(String value) => value.replaceAll(RegExp(r'[\s-]'), '');
 }

@@ -1,7 +1,6 @@
 import '../utils/dates.dart';
 import 'payment.dart';
 
-/// Matches the Java enum `BookingStatus`.
 enum BookingStatus {
   requested,
   accepted,
@@ -10,13 +9,11 @@ enum BookingStatus {
   cancelled,
   expired;
 
-  /// "ACCEPTED" → BookingStatus.accepted
   static BookingStatus fromJson(String value) => BookingStatus.values.firstWhere(
         (status) => status.name.toUpperCase() == value.toUpperCase(),
         orElse: () => BookingStatus.expired,
       );
 
-  /// The words the app shows.
   String get label => switch (this) {
         BookingStatus.requested => 'Waiting for trainer',
         BookingStatus.accepted => 'Awaiting payment',
@@ -26,12 +23,11 @@ enum BookingStatus {
         BookingStatus.expired => 'Expired',
       };
 
-  /// Still keeps the time slot (not finished in any way).
+  /// Whether the booking still holds its time slot.
   bool get isActive =>
       this == BookingStatus.requested || this == BookingStatus.accepted || this == BookingStatus.paid;
 }
 
-/// The Dart version of the Java `BookingResponse` record.
 class Booking {
   final int id;
   final BookingStatus status;
@@ -41,19 +37,19 @@ class Booking {
   final String memberName;
   final int branchId;
   final String branchName;
-  final DateTime date; // the day only (time = 00:00)
-  final String startTime; // "10:00"
-  final String endTime; // "11:00"
+  final DateTime date; // date only
+  final String startTime;
+  final String endTime;
   final int durationMinutes;
-  final double price; // JOD
+  final double price;
   final String? memberNote;
   final String? trainerReply;
-  final DateTime? respondBy; // the trainer must answer before this
-  final DateTime? payBy; // accepted: the member must pay before this
-  final bool canPay; // worked out by the backend, so the rules live in one place
-  final DateTime? cancelUntil; // the last moment Cancel works (null = can't be cancelled)
+  final DateTime? respondBy;
+  final DateTime? payBy;
+  final bool canPay; // computed by the backend so the rules live in one place
+  final DateTime? cancelUntil; // null when the booking can't be cancelled
   final bool canCancel;
-  final PaymentInfo? payment; // the receipt, once paid (members only)
+  final PaymentInfo? payment; // set once paid, members only
 
   const Booking({
     required this.id,
@@ -79,13 +75,11 @@ class Booking {
     required this.payment,
   });
 
-  /// "10:00 – 11:00"
   String get timeLabel => '$startTime – $endTime';
 
-  /// "Wed 7 Oct"
   String get dateLabel => prettyDate(date);
 
-  /// Upcoming = still active and the session hasn't ended yet (in gym time).
+  /// Active and not yet ended, in gym (Amman) time.
   bool get isUpcoming => status.isActive && atTime(date, endTime).isAfter(gymNow());
 
   factory Booking.fromJson(Map<String, dynamic> json) {

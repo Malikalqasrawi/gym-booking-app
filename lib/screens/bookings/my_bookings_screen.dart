@@ -11,17 +11,11 @@ import '../../widgets/load_error.dart';
 import '../../widgets/theme_toggle_button.dart';
 import 'checkout_sheet.dart';
 
-/// The member's bookings, in two tabs:
-///   Upcoming: waiting for the trainer, awaiting payment, or confirmed (paid), and not over yet
-///   History:  everything else (declined, cancelled, expired, finished)
-///
-///   GET  /api/bookings/mine
-///   POST /api/bookings/{id}/cancel
-///   Pay → checkout_sheet.dart
+/// The member's bookings: Upcoming (active and not yet ended) and History (everything else).
 class MyBookingsScreen extends StatefulWidget {
   const MyBookingsScreen({super.key, this.justBooked});
 
-  /// Set when we arrive straight after sending a request, to show a "Request sent" banner.
+  /// Set right after a booking request to show a confirmation banner.
   final Booking? justBooked;
 
   @override
@@ -30,7 +24,7 @@ class MyBookingsScreen extends StatefulWidget {
 
 class _MyBookingsScreenState extends State<MyBookingsScreen> {
   late Future<List<Booking>> _future;
-  int? _cancellingId; // shows a spinner on that card's Cancel button
+  int? _cancellingId;
 
   @override
   void initState() {
@@ -42,28 +36,26 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     _future = context.read<BookingApi>().myBookings();
   }
 
-  /// Pull-to-refresh: load again and wait until it's done.
   Future<void> _refresh() async {
     setState(_load);
     try {
       await _future;
     } catch (_) {
-      // The error is shown by the FutureBuilder
+      // Shown by the FutureBuilder.
     }
   }
 
-  /// Opens the payment sheet. When it comes back with a booking, it was paid.
   Future<void> _pay(Booking booking) async {
     final paid = await showCheckoutSheet(context, booking);
     if (!mounted) return;
     if (paid != null) {
       showInfo(context, 'Paid! Your session with ${paid.trainerName} is confirmed. The receipt is in your email.');
     }
-    setState(_load); // reload either way (e.g. the deadline may have passed meanwhile)
+    setState(_load); // reload either way: the payment deadline may have passed meanwhile
   }
 
   Future<void> _cancel(Booking booking) async {
-    // Paid → the backend refunds it, so tell them where the money goes
+    // The backend refunds paid bookings; tell the member where the money goes.
     final payment = booking.payment;
     final refund = payment != null && !payment.isRefunded;
     final refundLine = payment != null && refund ? '\n\nYou\'ll get ${formatJod(payment.amount)} back to ${payment.method}.' : '';
@@ -131,8 +123,8 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
             final upcoming = all.where((b) => b.isUpcoming).toList()
               ..sort((a, b) => a.date.compareTo(b.date) != 0
                   ? a.date.compareTo(b.date)
-                  : a.startTime.compareTo(b.startTime)); // soonest first
-            final history = all.where((b) => !b.isUpcoming).toList(); // newest first (from the backend)
+                  : a.startTime.compareTo(b.startTime));
+            final history = all.where((b) => !b.isUpcoming).toList(); // backend returns newest first
 
             return TabBarView(
               children: [
@@ -152,7 +144,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     return RefreshIndicator(
       onRefresh: _refresh,
       child: ListView(
-        // AlwaysScrollable: pull-to-refresh works even when the list is short or empty
+        // Keeps pull-to-refresh working when the list is short or empty.
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
         children: [
@@ -188,7 +180,6 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
   }
 }
 
-/// "Request sent to Sara" (shown once, right after booking)
 class _SentBanner extends StatelessWidget {
   const _SentBanner({required this.booking});
 

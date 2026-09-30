@@ -11,8 +11,7 @@ import '../../utils/dates.dart';
 import '../../utils/money.dart';
 import '../../widgets/trainer_avatar.dart';
 
-/// Opens the "Pay for your session" sheet.
-/// Returns the updated booking (status PAID) if the member paid, or null if they closed it.
+/// Returns the paid booking, or null if the sheet was dismissed.
 Future<Booking?> showCheckoutSheet(BuildContext context, Booking booking) {
   return showModalBottomSheet<Booking>(
     context: context,
@@ -23,10 +22,8 @@ Future<Booking?> showCheckoutSheet(BuildContext context, Booking booking) {
   );
 }
 
-/// The summary before paying:
-///   1. POST /api/bookings/{id}/payment          → amount, deadline, cancellation rule, Stripe's clientSecret
-///   2. "Pay" → Stripe's payment screen          → the member types the card THERE
-///   3. POST /api/bookings/{id}/payment/confirm  → the backend asks Stripe and marks the booking PAID
+/// Starts the payment on the backend and presents Stripe's PaymentSheet. The booking is only
+/// treated as paid once the backend has confirmed the payment with Stripe.
 class CheckoutSheet extends StatefulWidget {
   const CheckoutSheet({super.key, required this.booking});
 
@@ -48,7 +45,6 @@ class _CheckoutSheetState extends State<CheckoutSheet> {
   }
 
   Future<void> _pay(PaymentStart start) async {
-    // Read these BEFORE any await (the context may be gone afterwards)
     final api = context.read<BookingApi>();
     final themeMode = context.read<ThemeController>().mode;
     final navigator = Navigator.of(context);
@@ -61,7 +57,7 @@ class _CheckoutSheetState extends State<CheckoutSheet> {
       if (!start.alreadyPaid) {
         final paid = await StripeCheckout.pay(start, themeMode: themeMode);
         if (!paid) {
-          // Closed Stripe's screen: nothing was charged, they can press Pay again
+          // Sheet dismissed: nothing was charged.
           if (mounted) setState(() => _busy = false);
           return;
         }
@@ -126,7 +122,6 @@ class _CheckoutSheetState extends State<CheckoutSheet> {
         Text('Pay for your session', style: text.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
         const SizedBox(height: 16),
 
-        // ---- What they're paying for ----
         Row(
           children: [
             TrainerAvatar(id: booking.trainerId, name: booking.trainerName, radius: 24),
@@ -152,7 +147,6 @@ class _CheckoutSheetState extends State<CheckoutSheet> {
         ),
         const SizedBox(height: 16),
 
-        // ---- The rules, before they pay ----
         _Rule(
           icon: Icons.schedule,
           text: 'Pay before ${prettyDateTime(start.payBy)}. After that, the time is released.',
@@ -200,7 +194,6 @@ class _CheckoutSheetState extends State<CheckoutSheet> {
   }
 }
 
-/// An icon + a sentence.
 class _Rule extends StatelessWidget {
   const _Rule({required this.icon, required this.text, this.color});
 

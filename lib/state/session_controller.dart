@@ -6,8 +6,7 @@ import '../services/api_exception.dart';
 import '../services/auth_api.dart';
 import '../services/session_storage.dart';
 
-/// Knows WHO is logged in. When it changes, it calls notifyListeners()
-/// and the widgets listening to it rebuild (e.g. switch from the login screen to Home).
+/// The logged-in user. Keeps the ApiClient token and the stored session in sync.
 class SessionController extends ChangeNotifier {
   SessionController({
     required ApiClient apiClient,
@@ -26,29 +25,25 @@ class SessionController extends ChangeNotifier {
   AppUser? get user => _user;
   bool get isLoggedIn => _user != null;
 
-  /// Called once when the app starts: are we still logged in from last time?
   Future<void> restore() async {
     final token = await _storage.readToken();
     if (token == null) return;
 
     _apiClient.token = token;
     try {
-      // Ask the backend who this token belongs to (also checks it hasn't expired)
       _user = await _authApi.me();
       await _storage.save(token, _user!);
     } on ApiException catch (e) {
       if (e.statusCode == 401) {
-        // Token expired or invalid: log out
         await _clear();
       } else {
-        // Backend is off, too many requests (429), server error...: the token may still be fine,
-        // so trust the saved user for now instead of logging out
+        // Backend unreachable, rate-limited or failing: the token may still be valid,
+        // so keep the saved user instead of logging out.
         _user = await _storage.readUser();
       }
     }
   }
 
-  /// Called after a successful login or email verification.
   Future<void> startSession(AuthResult result) async {
     _apiClient.token = result.token;
     await _storage.save(result.token, result.user);

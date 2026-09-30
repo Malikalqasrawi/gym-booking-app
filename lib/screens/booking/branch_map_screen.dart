@@ -9,9 +9,6 @@ import '../../widgets/load_error.dart';
 import '../../widgets/theme_toggle_button.dart';
 import 'trainers_screen.dart';
 
-/// Step 1 of booking: pick a branch on the map.
-///
-///   GET /api/branches → a pin for each branch → tap a pin (or a chip) → "See trainers"
 class BranchMapScreen extends StatefulWidget {
   const BranchMapScreen({super.key});
 
@@ -36,7 +33,7 @@ class _BranchMapScreenState extends State<BranchMapScreen> {
 
   void _select(Branch branch) {
     setState(() => _selected = branch);
-    _mapController.move(branch.position, 13.5);   // fly the map to the pin
+    _mapController.move(branch.position, 13.5);
   }
 
   @override
@@ -86,11 +83,10 @@ class _BranchMapScreenState extends State<BranchMapScreen> {
     final scheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // OpenStreetMap tiles are light. In dark mode we pass them through a colour filter
-    // that turns them into a dark grey map.
+    // OSM only serves light tiles; in dark mode invert them into a dark grey map.
     Widget tiles = TileLayer(
       urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-      userAgentPackageName: 'com.malik.gym_booking',   // OSM asks every app to identify itself
+      userAgentPackageName: 'com.malik.gym_booking', // required by the OSM tile usage policy
     );
     if (isDark) {
       tiles = ColorFiltered(
@@ -107,7 +103,6 @@ class _BranchMapScreenState extends State<BranchMapScreen> {
     return FlutterMap(
       mapController: _mapController,
       options: MapOptions(
-        // Start zoomed so that EVERY branch pin fits on screen (works for 3 branches or 30)
         initialCameraFit: CameraFit.coordinates(
           coordinates: [for (final branch in branches) branch.position],
           padding: const EdgeInsets.fromLTRB(48, 72, 48, 48),
@@ -123,7 +118,7 @@ class _BranchMapScreenState extends State<BranchMapScreen> {
                 point: branch.position,
                 width: 48,
                 height: 48,
-                alignment: Alignment.topCenter,   // the pin's tip sits exactly on the location
+                alignment: Alignment.topCenter, // puts the pin's tip on the location
                 child: GestureDetector(
                   onTap: () => _select(branch),
                   child: Icon(
@@ -136,7 +131,7 @@ class _BranchMapScreenState extends State<BranchMapScreen> {
               ),
           ],
         ),
-        // OpenStreetMap's rules: always show who made the map
+        // Attribution is required by OSM.
         RichAttributionWidget(
           attributions: [TextSourceAttribution('OpenStreetMap contributors')],
         ),
@@ -145,7 +140,6 @@ class _BranchMapScreenState extends State<BranchMapScreen> {
   }
 }
 
-/// The panel under the map: branch chips + details of the selected branch.
 class _BranchPanel extends StatelessWidget {
   const _BranchPanel({
     required this.branches,

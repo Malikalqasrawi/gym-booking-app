@@ -1,8 +1,4 @@
-/// Every error from the backend comes in the same shape (Java's ErrorResponse):
-/// { "status": 409, "code": "EMAIL_TAKEN", "message": "...", "fieldErrors": {...} }
-///
-/// We turn it into this Dart exception so screens can simply do:
-///   try { ... } on ApiException catch (e) { showError(e.message); }
+/// An error response from the backend (its ErrorResponse body), or a network failure.
 class ApiException implements Exception {
   final int statusCode;
   final String code;
@@ -16,13 +12,12 @@ class ApiException implements Exception {
     this.fieldErrors = const {},
   });
 
-  /// The phone couldn't reach the server at all (backend not running, wrong IP...).
   factory ApiException.network([String? message]) {
     return ApiException(
       statusCode: 0,
       code: 'NETWORK',
       message: message ??
-          "Can't reach the server. Make sure the backend is running in NetBeans.",
+          "Can't reach the server. Check your connection and try again.",
     );
   }
 

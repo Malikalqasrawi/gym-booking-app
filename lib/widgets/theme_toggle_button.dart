@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import '../state/theme_controller.dart';
 
-/// Sun / moon button: switches between light and dark mode.
 class ThemeToggleButton extends StatelessWidget {
   const ThemeToggleButton({super.key});
 

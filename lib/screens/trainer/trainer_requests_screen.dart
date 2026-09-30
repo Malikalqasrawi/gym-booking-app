@@ -9,14 +9,6 @@ import '../../widgets/booking_card.dart';
 import '../../widgets/load_error.dart';
 import '../../widgets/theme_toggle_button.dart';
 
-/// The trainer's screen, in two tabs:
-///   Requests: waiting for my answer (Accept / Decline), most urgent first
-///   Schedule: sessions I accepted (awaiting payment or paid) that haven't finished yet
-///
-///   GET  /api/trainer/requests
-///   GET  /api/trainer/schedule
-///   POST /api/trainer/requests/{id}/accept
-///   POST /api/trainer/requests/{id}/reject
 class TrainerRequestsScreen extends StatefulWidget {
   const TrainerRequestsScreen({super.key});
 
@@ -27,7 +19,7 @@ class TrainerRequestsScreen extends StatefulWidget {
 class _TrainerRequestsScreenState extends State<TrainerRequestsScreen> {
   late Future<List<Booking>> _requests;
   late Future<List<Booking>> _schedule;
-  int? _busyId; // the request we're answering right now (disables its buttons)
+  int? _busyId;
 
   @override
   void initState() {
@@ -46,7 +38,7 @@ class _TrainerRequestsScreenState extends State<TrainerRequestsScreen> {
     try {
       await Future.wait([_requests, _schedule]);
     } catch (_) {
-      // The error is shown by the FutureBuilder
+      // Shown by the FutureBuilder.
     }
   }
 
@@ -63,7 +55,7 @@ class _TrainerRequestsScreenState extends State<TrainerRequestsScreen> {
       context: context,
       builder: (_) => _DeclineDialog(booking: booking),
     );
-    if (reason == null || !mounted) return; // closed without declining
+    if (reason == null || !mounted) return;
     await _answer(
       booking,
       (api) => api.rejectRequest(booking.id, message: reason),
@@ -71,7 +63,7 @@ class _TrainerRequestsScreenState extends State<TrainerRequestsScreen> {
     );
   }
 
-  /// Sends the answer, shows the result, then reloads both tabs.
+  /// Sends the answer, then reloads both tabs since the booking may move between them.
   Future<void> _answer(Booking booking, Future<Booking> Function(BookingApi api) send, String doneText) async {
     final api = context.read<BookingApi>();
     setState(() => _busyId = booking.id);
@@ -81,7 +73,7 @@ class _TrainerRequestsScreenState extends State<TrainerRequestsScreen> {
       showInfo(context, doneText);
     } on ApiException catch (e) {
       if (!mounted) return;
-      showError(context, e.message); // e.g. "This request expired because it wasn't answered in time."
+      showError(context, e.message);
     }
     if (!mounted) return;
     setState(() {
@@ -134,7 +126,6 @@ class _TrainerRequestsScreenState extends State<TrainerRequestsScreen> {
   }
 }
 
-/// One tab: loading / error / empty / the list of cards.
 class _BookingList extends StatelessWidget {
   const _BookingList({
     required this.future,
@@ -189,7 +180,7 @@ class _BookingList extends StatelessWidget {
   }
 }
 
-/// Asks for an optional reason. Closes with the reason ('' if none), or null if cancelled.
+/// Pops with the optional reason ('' if none), or null if cancelled.
 class _DeclineDialog extends StatefulWidget {
   const _DeclineDialog({required this.booking});
 

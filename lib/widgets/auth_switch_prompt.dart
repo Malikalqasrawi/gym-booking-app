@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// "Already have an account? Log in"  /  "Don't have an account? Sign up"
 class AuthSwitchPrompt extends StatelessWidget {
   const AuthSwitchPrompt({
     super.key,

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Matches the Java enum `TrainingCategory`. Each value has the code the backend uses,
-/// the words the app shows, and an icon.
+/// Mirrors the backend's TrainingCategory enum; [code] is the API value.
 enum TrainingCategory {
   strength('STRENGTH', 'Strength', Icons.fitness_center),
   hiit('HIIT', 'HIIT & cardio', Icons.local_fire_department),
@@ -13,11 +12,11 @@ enum TrainingCategory {
 
   const TrainingCategory(this.code, this.label, this.icon);
 
-  final String code; // "YOGA": sent to / received from the backend
-  final String label; // "Yoga": shown in the app
+  final String code;
+  final String label;
   final IconData icon;
 
-  /// "YOGA" → TrainingCategory.yoga (null if missing or unknown)
+  /// Returns null for a missing or unknown code.
   static TrainingCategory? fromCode(String? code) =>
       TrainingCategory.values.where((category) => category.code == code).firstOrNull;
 }
