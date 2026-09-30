@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Shown when loading from the backend failed: the message + a "Try again" button.
 class LoadError extends StatelessWidget {
   const LoadError({super.key, required this.message, required this.onRetry});
 

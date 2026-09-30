@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// Light and dark themes built from ONE seed color.
-/// Material 3 generates matching colors for both modes automatically.
 class AppTheme {
-  static const Color seed = Color(0xFFFF6B2C);   // energetic orange
+  static const Color seed = Color(0xFFFF6B2C);
 
   static ThemeData light() => _build(Brightness.light);
 
@@ -42,7 +40,6 @@ class AppTheme {
     );
   }
 
-  /// Same look for every text field in the app.
   static InputDecoration input(
     BuildContext context, {
     required String label,

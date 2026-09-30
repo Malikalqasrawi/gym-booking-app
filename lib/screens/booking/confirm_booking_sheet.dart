@@ -10,11 +10,7 @@ import '../../services/booking_api.dart';
 import '../../utils/dates.dart';
 import '../../utils/money.dart';
 
-/// Step 4 of booking: check the details, add a note, and send the request.
-///
-///   POST /api/bookings
-///
-/// Closes with the new [Booking] if it worked, or with null if the member closed it.
+/// Sends the booking request. Pops with the created [Booking], or null if dismissed.
 class ConfirmBookingSheet extends StatefulWidget {
   const ConfirmBookingSheet({
     super.key,
@@ -63,7 +59,7 @@ class _ConfirmBookingSheetState extends State<ConfirmBookingSheet> {
       Navigator.of(context).pop(booking);
     } on ApiException catch (e) {
       if (!mounted) return;
-      // e.g. SLOT_NOT_AVAILABLE: someone else took this time a moment ago
+      // Typically SLOT_NOT_AVAILABLE when someone else just took the slot.
       setState(() {
         _sending = false;
         _error = e.message;
@@ -78,7 +74,6 @@ class _ConfirmBookingSheetState extends State<ConfirmBookingSheet> {
     final price = widget.trainer.priceFor(widget.durationMinutes);
 
     return Padding(
-      // Moves the sheet up when the keyboard opens
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),

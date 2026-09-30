@@ -14,10 +14,6 @@ import '../../widgets/trainer_avatar.dart';
 import '../bookings/my_bookings_screen.dart';
 import 'confirm_booking_sheet.dart';
 
-/// Step 3 of booking: pick a date, a duration and a free time.
-///
-///   GET /api/trainers/{id}/availability?date=2026-10-04&duration=60
-///   → called again every time the date or the duration changes.
 class ScheduleScreen extends StatefulWidget {
   const ScheduleScreen({super.key, required this.trainer, required this.branch});
 
@@ -29,8 +25,8 @@ class ScheduleScreen extends StatefulWidget {
 }
 
 class _ScheduleScreenState extends State<ScheduleScreen> {
-  static const _daysAhead = 14;               // same rule as the backend (app.booking.days-ahead)
-  static const _durations = [30, 45, 60, 90]; // same list as the backend
+  static const _daysAhead = 14; // must match the backend's app.booking.days-ahead
+  static const _durations = [30, 45, 60, 90]; // must match the durations the backend accepts
 
   late final List<DateTime> _dates;
   late DateTime _date;
@@ -41,8 +37,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   Availability? _availability;
   TimeSlot? _slot;
 
-  /// Counts requests, so an old slow answer can't overwrite a newer one
-  /// (e.g. you tap Sunday, then quickly Monday; Sunday's answer arrives last).
+  /// Incremented per request so a slow, older response can't overwrite a newer one.
   int _requestId = 0;
 
   @override
@@ -50,13 +45,11 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     super.initState();
     final today = gymToday();
     _dates = [for (var i = 0; i < _daysAhead; i++) DateTime(today.year, today.month, today.day + i)];
-    // Start on the first day the trainer works
     _date = _dates.firstWhere(widget.trainer.worksOn, orElse: () => _dates.first);
-    _loading = true;   // (setState isn't allowed inside initState, so we set the field directly)
+    _loading = true;
     _fetchSlots();
   }
 
-  /// Show the spinner, then ask the backend again (used when the date or duration changes).
   void _loadSlots() {
     setState(() {
       _loading = true;
@@ -94,11 +87,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     _loadSlots();
   }
 
-  /// Opens the "Confirm your request" sheet. If the request was sent, goes to My bookings.
   Future<void> _continue() async {
     final booking = await showModalBottomSheet<Booking>(
       context: context,
-      isScrollControlled: true, // lets the sheet grow when the keyboard opens
+      isScrollControlled: true, // lets the sheet resize for the keyboard
       showDragHandle: true,
       builder: (_) => ConfirmBookingSheet(
         trainer: widget.trainer,
@@ -110,18 +102,17 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     );
     if (!mounted) return;
     if (booking == null) {
-      // Closed without sending (or the time was just taken): show fresh times
+      // Dismissed, possibly because the slot was just taken: refresh the times.
       _loadSlots();
       return;
     }
-    // Sent! Open My bookings and remove the booking steps (map → trainers → time) from the back stack
+    // Drop the booking flow (map, trainers, schedule) from the back stack.
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => MyBookingsScreen(justBooked: booking)),
       (route) => route.isFirst,
     );
   }
 
-  /// " · 20 JOD" (empty if the trainer has no price yet)
   String get _priceLabel {
     final price = widget.trainer.priceFor(_duration);
     return price == null ? '' : ' · ${formatJod(price)}';
@@ -256,7 +247,6 @@ class _TrainerHeader extends StatelessWidget {
   }
 }
 
-/// A horizontal row of the next 14 days. Days the trainer doesn't work are faded.
 class _DateStrip extends StatelessWidget {
   const _DateStrip({required this.dates, required this.selected, required this.trainer, required this.onPick});
 

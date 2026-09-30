@@ -13,10 +13,9 @@ import 'theme/app_theme.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 1. Create the objects the whole app shares (one of each)
   final apiClient = ApiClient();
   final authApi = AuthApi(apiClient);
-  final bookingApi = BookingApi(apiClient);   // same ApiClient → same login token
+  final bookingApi = BookingApi(apiClient); // shares the auth token held by apiClient
   final session = SessionController(
     apiClient: apiClient,
     authApi: authApi,
@@ -24,10 +23,8 @@ Future<void> main() async {
   );
   final themeController = ThemeController();
 
-  // 2. Load saved settings: theme choice + "am I still logged in?"
   await Future.wait([themeController.load(), session.restore()]);
 
-  // 3. Provide them to every screen below (screens use context.read / context.watch)
   runApp(
     MultiProvider(
       providers: [
@@ -46,7 +43,6 @@ class GymBookingApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Rebuilds when the user taps the sun/moon button
     final themeMode = context.watch<ThemeController>().mode;
 
     return MaterialApp(

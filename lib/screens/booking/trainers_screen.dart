@@ -12,11 +12,6 @@ import '../../widgets/theme_toggle_button.dart';
 import '../../widgets/trainer_avatar.dart';
 import 'trainer_profile_screen.dart';
 
-/// Step 2 of booking: pick a trainer at the chosen branch, with filters.
-///
-///   GET /api/branches/{id}/trainers?category=YOGA&gender=FEMALE&maxRate=20
-///
-/// Every time a filter chip changes, we ask the backend again with the new filters.
 class TrainersScreen extends StatefulWidget {
   const TrainersScreen({super.key, required this.branch});
 
@@ -27,12 +22,12 @@ class TrainersScreen extends StatefulWidget {
 }
 
 class _TrainersScreenState extends State<TrainersScreen> {
-  static const _priceLimits = [15, 20, 25]; // "Up to 15 JOD/h" ...
+  static const _priceLimits = [15, 20, 25];
 
   late Future<List<Trainer>> _trainersFuture;
-  TrainingCategory? _category; // null = all
-  String? _gender; // null = any, "FEMALE", "MALE"
-  int? _maxRate; // null = any price
+  TrainingCategory? _category;
+  String? _gender;
+  int? _maxRate;
 
   bool get _hasFilters => _category != null || _gender != null || _maxRate != null;
 
@@ -51,7 +46,7 @@ class _TrainersScreenState extends State<TrainersScreen> {
         );
   }
 
-  /// Changes the filters and reloads. Tapping the selected chip again turns it off.
+  /// Replaces all filters and reloads; omitted filters are cleared.
   void _setFilters({TrainingCategory? category, String? gender, int? maxRate}) {
     setState(() {
       _category = category;

@@ -1,4 +1,3 @@
-/// Matches the Java enum `PaymentStatus`.
 enum PaymentStatus {
   pending,
   succeeded,
@@ -10,11 +9,10 @@ enum PaymentStatus {
       );
 }
 
-/// The receipt part of a booking (Java `PaymentInfo`). Only there once something was paid.
 class PaymentInfo {
   final PaymentStatus status;
-  final double amount; // JOD
-  final String method; // "Visa •••• 4242"
+  final double amount;
+  final String method;
   final DateTime? paidAt;
   final DateTime? refundedAt;
 
@@ -37,17 +35,16 @@ class PaymentInfo {
       );
 }
 
-/// What POST /api/bookings/{id}/payment answers (Java `PaymentStartResponse`):
-/// everything needed to open Stripe's payment screen for ONE booking.
+/// What the backend returns to start paying for one booking with Stripe's PaymentSheet.
 class PaymentStart {
   final int bookingId;
-  final String? clientSecret; // opens Stripe's screen for this payment only
-  final String publishableKey; // Stripe's PUBLIC key (pk_test_...), safe to have in the app
-  final String merchantName; // shown at the top of Stripe's screen
-  final double amount; // JOD
-  final DateTime payBy; // pay before this, or the time is released
-  final DateTime cancelUntilAfterPaying; // once paid, cancelling (with refund) is possible until this
-  final bool alreadyPaid; // the money already arrived: skip Stripe's screen, just confirm
+  final String? clientSecret;
+  final String publishableKey;
+  final String merchantName;
+  final double amount;
+  final DateTime payBy; // the slot is released if unpaid by then
+  final DateTime cancelUntilAfterPaying; // refundable cancellation deadline once paid
+  final bool alreadyPaid; // payment already went through: skip the sheet and just confirm
 
   const PaymentStart({
     required this.bookingId,

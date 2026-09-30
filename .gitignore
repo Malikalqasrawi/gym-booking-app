@@ -47,8 +47,7 @@ app.*.map.json
 # Widget Preview related
 .widget_preview/
 
-# ---- SECRETS: never on GitHub ----
-# (android/.gitignore already hides local.properties, key.properties and keystores)
+# Secrets (android/.gitignore covers key.properties and keystores)
 .env
 .env.*
 *.pem

@@ -13,6 +13,7 @@ A Flutter app for booking personal-training sessions in a gym chain. Find a bran
 
 ---
 
+<!--
 ## Screenshots
 
 | Home | Branch map | Trainers + filters | Trainer profile |
@@ -22,6 +23,7 @@ A Flutter app for booking personal-training sessions in a gym chain. Find a bran
 | Pay with Stripe | My bookings | Trainer home | Dark mode |
 |---|---|---|---|
 | <img src="docs/screenshots/checkout.png" width="200" alt="Checkout sheet"> | <img src="docs/screenshots/my-bookings.png" width="200" alt="My bookings"> | <img src="docs/screenshots/trainer-home.png" width="200" alt="Trainer home"> | <img src="docs/screenshots/dark-mode.png" width="200" alt="Dark mode"> |
+-->
 
 ## What it does
 
@@ -73,7 +75,7 @@ flowchart TD
 
 ## Getting started
 
-1. **Start the backend** (see its [Quick start](https://github.com/Malikalqasrawi/gym-booking-backend#quick-start)). It must answer on port 8080.
+1. **Start the backend** (see [Getting started](https://github.com/Malikalqasrawi/gym-booking-backend#getting-started)). It must answer on port 8080.
 2. **Run the app** on an Android emulator:
    ```bash
    git clone https://github.com/Malikalqasrawi/gym-booking-app.git
@@ -104,22 +106,20 @@ lib/
 ├── models/     Booking, Trainer, Branch, PaymentStart... (fromJson)
 ├── services/   ApiClient, AuthApi, BookingApi, secure token storage, StripeCheckout
 ├── state/      SessionController (who is logged in), ThemeController (light/dark)
-├── screens/    auth, booking (map → trainers → profile → time), bookings, home, trainer
-├── widgets/    reusable pieces: BookingCard, TrainerAvatar, LoadError...
+├── screens/    auth, booking flow (map, trainers, profile, time), bookings, home, trainer
+├── widgets/    shared widgets (BookingCard, TrainerAvatar, LoadError, ...)
 ├── theme/      Material 3 light and dark themes
 └── utils/      dates (gym time zone), money (JOD), validators, messages
 ```
 
-## Project status
+## Roadmap
 
-| Stage | Status |
-|---|---|
-| Accounts, email verification, secure login | Done |
-| Branch map, trainers, profiles, filters, availability | Done |
-| Booking requests, trainer answers, My bookings | Done |
-| Stripe payments, receipts, refunds | Done |
-| Admin screens, 2FA | Next |
-| Google sign-in | Planned |
+- [x] Accounts, email verification, secure login
+- [x] Branch map, trainers, profiles, filters, availability
+- [x] Booking requests, trainer answers, My bookings
+- [x] Stripe payments, receipts, refunds
+- [ ] Admin screens
+- [ ] Google sign-in
 
 ## License
 

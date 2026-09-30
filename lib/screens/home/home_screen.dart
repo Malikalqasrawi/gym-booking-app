@@ -7,7 +7,6 @@ import '../../widgets/theme_toggle_button.dart';
 import 'member_home.dart';
 import 'trainer_home.dart';
 
-/// Home after login. Shows a different section per role (member / trainer / admin).
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -15,16 +14,15 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final session = context.watch<SessionController>();
     final user = session.user;
-    if (user == null) return const SizedBox.shrink();   // logging out
+    if (user == null) return const SizedBox.shrink(); // briefly null while logging out
 
-    // Same idea as polymorphism in Java: one screen, different content per role
     final roleSection = switch (user.role) {
       UserRole.member => const MemberHome(),
       UserRole.trainer => const TrainerHome(),
       UserRole.admin => const _ComingSoonCard(
           icon: Icons.admin_panel_settings_outlined,
           title: 'Manage the gym',
-          stage: 'Stage 5',
+          stage: 'the next release',
           items: [
             'Add and edit branches (with map location)',
             'Add trainers and their available time slots',

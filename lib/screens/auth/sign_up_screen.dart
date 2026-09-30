@@ -12,9 +12,6 @@ import '../../widgets/password_field.dart';
 import '../../widgets/theme_toggle_button.dart';
 import 'verify_email_screen.dart';
 
-/// Screen 1: create a member account.
-///
-/// Flow:  fill form → POST /api/auth/signup → open VerifyEmailScreen
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key, required this.onSwitchToLogin});
 
@@ -45,16 +42,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   Future<void> _submit() async {
-    // 1. Check the form on the phone first
     if (!_formKey.currentState!.validate()) return;
 
-    // 2. Grab what we need from context BEFORE any "await"
     final authApi = context.read<AuthApi>();
     final email = _emailController.text.trim();
 
     setState(() => _loading = true);
     try {
-      // 3. Call the Java backend
       final message = await authApi.signUp(
         fullName: _nameController.text.trim(),
         email: email,
@@ -63,13 +57,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
       );
       if (!mounted) return;
 
-      // 4. Success → go to the "enter code" screen
       showInfo(context, message);
       Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => VerifyEmailScreen(email: email)),
       );
     } on ApiException catch (e) {
-      if (mounted) showError(context, e.message);   // e.g. "An account with this email already exists"
+      if (mounted) showError(context, e.message);
     } finally {
       if (mounted) setState(() => _loading = false);
     }

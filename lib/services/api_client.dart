@@ -6,19 +6,13 @@ import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
 import 'api_exception.dart';
 
-/// One place that talks HTTP to the Java backend.
-///
-/// Every request:
-///   1. adds  Content-Type: application/json
-///   2. adds  `Authorization: Bearer <token>`  (if we're logged in)
-///   3. turns the JSON answer into a Dart Map
-///   4. turns error answers into an ApiException
+/// JSON HTTP client for the backend. Adds the bearer token when set and maps error
+/// responses to [ApiException].
 class ApiClient {
   ApiClient({http.Client? httpClient}) : _http = httpClient ?? http.Client();
 
   final http.Client _http;
 
-  /// Set after login, cleared on logout.
   String? token;
 
   Future<Map<String, dynamic>> get(String path) => _send('GET', path);

@@ -8,8 +8,6 @@ import '../../widgets/theme_toggle_button.dart';
 import '../../widgets/trainer_avatar.dart';
 import 'schedule_screen.dart';
 
-/// A trainer's full profile, shown before booking.
-/// Everything here is already in the Trainer we got from the list, so no extra API call is needed.
 class TrainerProfileScreen extends StatelessWidget {
   const TrainerProfileScreen({super.key, required this.trainer, required this.branch});
 
@@ -33,7 +31,6 @@ class TrainerProfileScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
         children: [
-          // ---- Header ----
           Center(child: TrainerAvatar(id: trainer.id, name: trainer.fullName, radius: 46)),
           const SizedBox(height: 12),
           Text(trainer.fullName,
@@ -43,7 +40,6 @@ class TrainerProfileScreen extends StatelessWidget {
           Text(branch.name, textAlign: TextAlign.center, style: TextStyle(color: scheme.onSurfaceVariant)),
           const SizedBox(height: 16),
 
-          // ---- Three quick facts ----
           Row(
             children: [
               Expanded(child: _Fact(value: '${trainer.yearsOfExperience}', label: 'years')),
@@ -120,7 +116,7 @@ class TrainerProfileScreen extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
           child: FilledButton.icon(
             onPressed: trainer.hourlyRate == null
-                ? null // not bookable yet
+                ? null
                 : () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => ScheduleScreen(trainer: trainer, branch: branch)),
                     ),
@@ -133,7 +129,6 @@ class TrainerProfileScreen extends StatelessWidget {
   }
 }
 
-/// A small box: big value on top, label underneath.
 class _Fact extends StatelessWidget {
   const _Fact({required this.value, required this.label, this.icon});
 
@@ -167,7 +162,6 @@ class _Fact extends StatelessWidget {
   }
 }
 
-/// A titled block of the profile.
 class _Section extends StatelessWidget {
   const _Section({required this.title, required this.child});
 
@@ -190,11 +184,10 @@ class _Section extends StatelessWidget {
   }
 }
 
-/// "Sun   08:00–16:00"  or  "Fri   Off"
 class _ScheduleRow extends StatelessWidget {
   const _ScheduleRow({required this.day, required this.trainer});
 
-  final String day; // "SUNDAY"
+  final String day;
   final Trainer trainer;
 
   @override

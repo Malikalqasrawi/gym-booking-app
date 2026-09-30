@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// A round avatar with the person's initials, e.g. "SH" for Sara Haddad.
-/// Each id always gets the same colour, so the list looks varied but stays consistent.
-/// (Real photos can come later, when the admin can upload them.)
+// TODO: show real photos once admins can upload them.
+
+/// Initials avatar whose colour is derived from [id], so a trainer always gets the same one.
 class TrainerAvatar extends StatelessWidget {
   const TrainerAvatar({super.key, required this.id, required this.name, this.radius = 28});
 

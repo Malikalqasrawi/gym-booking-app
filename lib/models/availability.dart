@@ -1,4 +1,3 @@
-/// One free time: { "start": "09:30", "end": "10:30" }
 class TimeSlot {
   final String start;
   final String end;
@@ -12,9 +11,8 @@ class TimeSlot {
   }
 }
 
-/// The Dart version of the Java `AvailabilityResponse` record.
 class Availability {
-  final String date; // "2026-10-04"
+  final String date;
   final int durationMinutes;
   final List<TimeSlot> slots;
 

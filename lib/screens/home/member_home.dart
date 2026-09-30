@@ -11,12 +11,6 @@ import '../booking/branch_map_screen.dart';
 import '../booking/trainers_screen.dart';
 import '../bookings/my_bookings_screen.dart';
 
-/// The member's part of the home screen:
-///   1. Your next session (or "nothing booked yet")
-///   2. Two quick actions: Book a session / My bookings
-///   3. Our branches (swipe sideways, tap one to see its trainers)
-///
-/// Uses endpoints that already exist: GET /api/bookings/mine and GET /api/branches.
 class MemberHome extends StatefulWidget {
   const MemberHome({super.key});
 
@@ -40,7 +34,7 @@ class _MemberHomeState extends State<MemberHome> {
     _branches = api.getBranches();
   }
 
-  /// Opens a screen, and reloads when the member comes back (they may have booked or cancelled).
+  /// Pushes [screen] and reloads afterwards, since the member may have booked or cancelled.
   Future<void> _open(Widget screen) async {
     await Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
     if (!mounted) return;
@@ -114,7 +108,6 @@ class _MemberHomeState extends State<MemberHome> {
   }
 }
 
-/// "Your next session" with the trainer, date, time and status. Or a friendly empty state.
 class _NextSessionCard extends StatelessWidget {
   const _NextSessionCard({
     required this.bookings,
@@ -152,7 +145,6 @@ class _NextSessionCard extends StatelessWidget {
             );
           }
 
-          // Soonest upcoming session first
           final upcoming = snapshot.data!.where((b) => b.isUpcoming).toList()
             ..sort((a, b) => a.date.compareTo(b.date) != 0
                 ? a.date.compareTo(b.date)
@@ -237,7 +229,6 @@ class _NextSessionCard extends StatelessWidget {
   }
 }
 
-/// A square-ish button with an icon, a title and a short explanation.
 class _ActionTile extends StatelessWidget {
   const _ActionTile({required this.icon, required this.title, required this.subtitle, required this.onTap});
 
@@ -273,7 +264,6 @@ class _ActionTile extends StatelessWidget {
   }
 }
 
-/// One branch in the sideways list.
 class _BranchTile extends StatelessWidget {
   const _BranchTile({required this.branch, required this.onTap});
 

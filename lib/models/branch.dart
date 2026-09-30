@@ -1,10 +1,5 @@
 import 'package:latlong2/latlong.dart';
 
-/// The Dart version of the Java `BranchResponse` record.
-///
-/// { "id": 1, "name": "Abdoun Branch", "address": "...", "city": "Amman",
-///   "latitude": 31.9454, "longitude": 35.8818, "phone": "+96265000001",
-///   "openingTime": "06:00", "closingTime": "23:00" }
 class Branch {
   final int id;
   final String name;
@@ -28,7 +23,6 @@ class Branch {
     required this.closingTime,
   });
 
-  /// Where the pin goes on the map.
   LatLng get position => LatLng(latitude, longitude);
 
   String get hours => '$openingTime – $closingTime';

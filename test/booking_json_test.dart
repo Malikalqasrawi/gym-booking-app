@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gym_booking/models/booking.dart';
 import 'package:gym_booking/models/payment.dart';
 
-/// Checks that the app reads the backend's booking JSON (Stage 4 fields) correctly.
 void main() {
   Map<String, dynamic> json({String status = 'ACCEPTED', Map<String, dynamic>? payment}) => {
         'id': 58,

@@ -1,10 +1,8 @@
-/// The three roles, matching the Java enum `Role` (MEMBER, TRAINER, ADMIN).
 enum UserRole {
   member,
   trainer,
   admin;
 
-  /// Turns "MEMBER" from the JSON into UserRole.member.
   static UserRole fromJson(String value) {
     return UserRole.values.firstWhere(
       (role) => role.name.toUpperCase() == value.toUpperCase(),
@@ -13,10 +11,6 @@ enum UserRole {
   }
 }
 
-/// The Dart version of the Java `UserResponse` record.
-///
-/// JSON from the backend:
-/// { "id": 1, "fullName": "Malik", "email": "...", "phone": "...", "role": "MEMBER", "title": "Member" }
 class AppUser {
   final int id;
   final String fullName;
