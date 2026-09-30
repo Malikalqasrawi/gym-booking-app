@@ -1,5 +1,5 @@
 name: gym_booking
-description: "Gym session booking app (Flutter frontend for the Java backend)."
+description: "Mobile client for the Gym Booking API."
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -10,13 +10,13 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  http: ^1.2.2              # calling the Java REST API
-  provider: ^6.1.2          # sharing SessionController / ThemeController with all screens
-  shared_preferences: ^2.3.2   # saving the theme choice on the phone
-  flutter_secure_storage: ^11.2.0   # login token, encrypted (Android Keystore / iPhone Keychain)
-  flutter_map: ^8.3.2       # OpenStreetMap map widget (branch pins)
-  latlong2: ^0.10.1         # LatLng type used by flutter_map
-  flutter_stripe: ^14.1.0   # Stripe's payment screen (the card goes straight to Stripe, never to our server)
+  http: ^1.2.2
+  provider: ^6.1.2
+  shared_preferences: ^2.3.2
+  flutter_secure_storage: ^11.2.0
+  flutter_map: ^8.3.2
+  latlong2: ^0.10.1
+  flutter_stripe: ^14.1.0
 
 dev_dependencies:
   flutter_test:

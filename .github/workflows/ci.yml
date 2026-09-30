@@ -1,6 +1,3 @@
-# Runs on GitHub's computers after every push to main and on every Pull Request:
-# downloads the packages, checks the code with the analyzer (lint rules in analysis_options.yaml),
-# and runs all tests in test/.
 name: CI
 
 on:

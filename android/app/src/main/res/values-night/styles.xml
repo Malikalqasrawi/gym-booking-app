@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- AppCompat / MaterialComponents themes: needed by Stripe's payment screen (flutter_stripe) -->
+    <!-- AppCompat/MaterialComponents parents are required by flutter_stripe. -->
     <!-- Theme applied to the Android Window while the process is starting when the OS's Dark Mode setting is on -->
     <style name="LaunchTheme" parent="Theme.AppCompat.NoActionBar">
         <!-- Show a splash screen on the activity. Automatically removed when

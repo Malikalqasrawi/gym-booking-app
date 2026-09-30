@@ -1,11 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Lets the app use the internet (to call the Java backend) -->
     <uses-permission android:name="android.permission.INTERNET"/>
 
-    <!-- usesCleartextTraffic="true": allows plain http:// (our local backend has no https).
-         Remove it when the backend is deployed with https. -->
-    <!-- allowBackup="false": don't copy the app's data (like the encrypted login token) into
-         phone backups. The encryption key can't leave the phone, so restored data couldn't be read anyway. -->
+    <!-- TODO: remove usesCleartextTraffic once the API is served over HTTPS. -->
     <application
         android:allowBackup="false"
         android:usesCleartextTraffic="true"
