@@ -1,0 +1,30 @@
+# Runs on GitHub's computers after every push to main and on every Pull Request:
+# downloads the packages, checks the code with the analyzer (lint rules in analysis_options.yaml),
+# and runs all tests in test/.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  analyze-and-test:
+    name: Analyze and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Get packages
+        run: flutter pub get
+
+      - name: Analyze (lint)
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
