@@ -58,7 +58,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     // The backend refunds paid bookings; tell the member where the money goes.
     final payment = booking.payment;
     final refund = payment != null && !payment.isRefunded;
-    final refundLine = payment != null && refund ? '\n\nYou\'ll get ${formatJod(payment.amount)} back to ${payment.method}.' : '';
+    final refundLine = payment != null && refund ? '\n\nYou\'ll get ${formatMoney(payment.amount, payment.currency)} back to ${payment.method}.' : '';
 
     final confirmed = await showDialog<bool>(
       context: context,
