@@ -5,3 +5,10 @@ String formatJod(double amount) {
   text = text.replaceFirst(RegExp(r'\.$'), '');
   return '$text JOD';
 }
+
+/// Formats an amount in [currency]: JOD as in [formatJod], other currencies with 2 decimals.
+String formatMoney(double amount, String currency) {
+  final code = currency.toUpperCase();
+  if (code == 'JOD') return formatJod(amount);
+  return '${amount.toStringAsFixed(2)} $code';
+}

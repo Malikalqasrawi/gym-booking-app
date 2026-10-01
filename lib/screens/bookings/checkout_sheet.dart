@@ -142,9 +142,17 @@ class _CheckoutSheetState extends State<CheckoutSheet> {
         Row(
           children: [
             Expanded(child: Text('Total', style: text.titleMedium)),
-            Text(formatJod(start.amount), style: text.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+            Text(formatJod(start.price), style: text.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
           ],
         ),
+        if (start.currency.toUpperCase() != 'JOD')
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              'Charged as ${formatMoney(start.amount, start.currency)} at the fixed exchange rate',
+              style: muted.copyWith(fontSize: 13),
+            ),
+          ),
         const SizedBox(height: 16),
 
         _Rule(
@@ -181,7 +189,7 @@ class _CheckoutSheetState extends State<CheckoutSheet> {
           icon: _busy
               ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
               : const Icon(Icons.lock_outline),
-          label: Text(start.alreadyPaid ? 'Confirm payment' : 'Pay ${formatJod(start.amount)}'),
+          label: Text(start.alreadyPaid ? 'Confirm payment' : 'Pay ${formatMoney(start.amount, start.currency)}'),
         ),
         const SizedBox(height: 8),
         Text(

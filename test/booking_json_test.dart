@@ -39,8 +39,8 @@ void main() {
   test('paid booking: receipt with card label', () {
     final booking = Booking.fromJson(json(status: 'PAID', payment: {
       'status': 'SUCCEEDED',
-      'amount': 20.0,
-      'currency': 'JOD',
+      'amount': 28.21,
+      'currency': 'USD',
       'method': 'Visa •••• 4242',
       'paidAt': '2026-09-30T10:15',
       'refundedAt': null,
@@ -51,6 +51,8 @@ void main() {
     expect(booking.canPay, isFalse);
     expect(booking.payment!.status, PaymentStatus.succeeded);
     expect(booking.payment!.method, 'Visa •••• 4242');
+    expect(booking.payment!.amount, 28.21);
+    expect(booking.payment!.currency, 'USD');
     expect(booking.payment!.isRefunded, isFalse);
     expect(booking.cancelUntil, DateTime(2026, 10, 6, 10, 0));
   });

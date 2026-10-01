@@ -11,7 +11,8 @@ enum PaymentStatus {
 
 class PaymentInfo {
   final PaymentStatus status;
-  final double amount;
+  final double amount; // what the card was charged, in [currency]
+  final String currency;
   final String method;
   final DateTime? paidAt;
   final DateTime? refundedAt;
@@ -19,6 +20,7 @@ class PaymentInfo {
   const PaymentInfo({
     required this.status,
     required this.amount,
+    required this.currency,
     required this.method,
     required this.paidAt,
     required this.refundedAt,
@@ -29,6 +31,7 @@ class PaymentInfo {
   factory PaymentInfo.fromJson(Map<String, dynamic> json) => PaymentInfo(
         status: PaymentStatus.fromJson(json['status'] as String),
         amount: (json['amount'] as num).toDouble(),
+        currency: json['currency'] as String? ?? 'JOD',
         method: json['method'] as String,
         paidAt: _date(json['paidAt']),
         refundedAt: _date(json['refundedAt']),
@@ -41,7 +44,9 @@ class PaymentStart {
   final String? clientSecret;
   final String publishableKey;
   final String merchantName;
-  final double amount;
+  final double price; // booking price in JOD
+  final double amount; // what the card is charged, in [currency]
+  final String currency;
   final DateTime payBy; // the slot is released if unpaid by then
   final DateTime cancelUntilAfterPaying; // refundable cancellation deadline once paid
   final bool alreadyPaid; // payment already went through: skip the sheet and just confirm
@@ -51,7 +56,9 @@ class PaymentStart {
     required this.clientSecret,
     required this.publishableKey,
     required this.merchantName,
+    required this.price,
     required this.amount,
+    required this.currency,
     required this.payBy,
     required this.cancelUntilAfterPaying,
     required this.alreadyPaid,
@@ -62,7 +69,9 @@ class PaymentStart {
         clientSecret: json['clientSecret'] as String?,
         publishableKey: json['publishableKey'] as String,
         merchantName: json['merchantName'] as String,
+        price: (json['price'] as num).toDouble(),
         amount: (json['amount'] as num).toDouble(),
+        currency: json['currency'] as String,
         payBy: DateTime.parse(json['payBy'] as String),
         cancelUntilAfterPaying: DateTime.parse(json['cancelUntilAfterPaying'] as String),
         alreadyPaid: json['alreadyPaid'] as bool? ?? false,

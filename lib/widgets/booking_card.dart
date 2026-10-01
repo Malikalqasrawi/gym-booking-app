@@ -118,8 +118,8 @@ class BookingCard extends StatelessWidget {
               _Line(
                 icon: payment.isRefunded ? Icons.undo : Icons.receipt_long_outlined,
                 text: payment.isRefunded
-                    ? 'Refunded ${formatJod(payment.amount)} to ${payment.method}'
-                    : 'Paid ${formatJod(payment.amount)} · ${payment.method}',
+                    ? 'Refunded ${formatMoney(payment.amount, payment.currency)} to ${payment.method}'
+                    : 'Paid ${formatMoney(payment.amount, payment.currency)} · ${payment.method}',
               ),
             ],
             if (booking.status == BookingStatus.paid && !showMember)
