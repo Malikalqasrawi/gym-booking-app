@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../models/app_user.dart';
 import '../../state/session_controller.dart';
 import '../../widgets/theme_toggle_button.dart';
+import '../admin/admin_home.dart';
 import 'member_home.dart';
 import 'trainer_home.dart';
 
@@ -19,16 +20,7 @@ class HomeScreen extends StatelessWidget {
     final roleSection = switch (user.role) {
       UserRole.member => const MemberHome(),
       UserRole.trainer => const TrainerHome(),
-      UserRole.admin => const _ComingSoonCard(
-          icon: Icons.admin_panel_settings_outlined,
-          title: 'Manage the gym',
-          stage: 'the next release',
-          items: [
-            'Add and edit branches (with map location)',
-            'Add trainers and their available time slots',
-            'Block dates or cancel bookings',
-          ],
-        ),
+      UserRole.admin => const AdminHome(),
     };
 
     return Scaffold(
@@ -101,63 +93,6 @@ class _ProfileCard extends StatelessWidget {
                 ],
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ComingSoonCard extends StatelessWidget {
-  const _ComingSoonCard({
-    required this.icon,
-    required this.title,
-    required this.stage,
-    required this.items,
-  });
-
-  final IconData icon;
-  final String title;
-  final String stage;
-  final List<String> items;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final text = Theme.of(context).textTheme;
-
-    return Card(
-      elevation: 0,
-      color: scheme.surfaceContainerHighest.withValues(alpha: 0.6),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: scheme.primary),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(title, style: text.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                ),
-                Chip(label: Text('Coming in $stage'), visualDensity: VisualDensity.compact),
-              ],
-            ),
-            const SizedBox(height: 12),
-            for (final item in items)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(Icons.check_circle_outline, size: 18, color: scheme.onSurfaceVariant),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text(item)),
-                  ],
-                ),
-              ),
           ],
         ),
       ),

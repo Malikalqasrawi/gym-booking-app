@@ -12,6 +12,7 @@ import '../../widgets/auth_switch_prompt.dart';
 import '../../widgets/password_field.dart';
 import '../../widgets/social_sign_in_buttons.dart';
 import '../../widgets/theme_toggle_button.dart';
+import 'accept_invite_screen.dart';
 import 'verify_email_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -62,17 +63,28 @@ class _LoginScreenState extends State<LoginScreen> {
 
   /// The account exists but isn't verified: send a fresh code and open the verification screen.
   Future<void> _goVerify(AuthApi authApi, String email) async {
+    var info = 'Please verify your email first. We sent you a new code.';
     try {
       await authApi.resendCode(email);
     } on ApiException catch (e) {
-      if (mounted) showError(context, e.message);
-      return;
+      // A code was sent less than a minute ago and is still valid, so open the screen anyway.
+      if (e.code != 'RESEND_TOO_SOON') {
+        if (mounted) showError(context, e.message);
+        return;
+      }
+      info = 'Please verify your email first. Use the code we sent you a moment ago.';
     }
     if (!mounted) return;
-    showInfo(context, 'Please verify your email first. We sent you a new code.');
+    showInfo(context, info);
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => VerifyEmailScreen(email: email)),
     );
+  }
+
+  void _openInvite() {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => AcceptInviteScreen(email: _emailController.text.trim()),
+    ));
   }
 
   @override
@@ -120,7 +132,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           )
                         : const Text('Log in'),
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 4),
+                  TextButton(
+                    onPressed: _loading ? null : _openInvite,
+                    child: const Text('I have an invite code'),
+                  ),
+                  const SizedBox(height: 20),
                   const SocialSignInButtons(),
                   const SizedBox(height: 16),
                   AuthSwitchPrompt(

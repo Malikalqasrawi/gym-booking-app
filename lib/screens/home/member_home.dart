@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../models/booking.dart';
 import '../../models/branch.dart';
+import '../../services/api_exception.dart';
 import '../../services/booking_api.dart';
 import '../../utils/dates.dart';
 import '../../widgets/booking_card.dart';
@@ -138,9 +139,10 @@ class _NextSessionCard extends StatelessWidget {
             return const SizedBox(height: 110, child: Center(child: CircularProgressIndicator()));
           }
           if (snapshot.hasError) {
+            final error = snapshot.error;
             return ListTile(
               leading: const Icon(Icons.cloud_off_outlined),
-              title: const Text('Could not load your sessions'),
+              title: Text(error is ApiException ? error.message : 'Could not load your sessions'),
               trailing: TextButton(onPressed: onRetry, child: const Text('Retry')),
             );
           }

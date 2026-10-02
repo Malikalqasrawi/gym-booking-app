@@ -15,6 +15,8 @@ class WorkingHours {
       endTime: json['endTime'] as String,
     );
   }
+
+  Map<String, dynamic> toJson() => {'dayOfWeek': dayOfWeek, 'startTime': startTime, 'endTime': endTime};
 }
 
 class Trainer {

@@ -24,7 +24,7 @@ class VerifyEmailScreen extends StatefulWidget {
 }
 
 class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
-  static const _resendWaitSeconds = 30;
+  static const _resendWaitSeconds = 60; // same as the backend's resend cooldown
 
   final _formKey = GlobalKey<FormState>();
   final _codeController = TextEditingController();

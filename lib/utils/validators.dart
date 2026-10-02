@@ -1,4 +1,4 @@
-/// Client-side form validation mirroring the backend's SignUpRequest rules.
+/// Client-side form validation mirroring the backend's request rules.
 /// The backend validates again.
 class Validators {
   static String? fullName(String? value) {
@@ -25,6 +25,7 @@ class Validators {
   static String? password(String? value) {
     if (value == null || value.isEmpty) return 'Password is required';
     if (value.length < 8) return 'Password must be at least 8 characters';
+    if (value.length > 72) return 'Password can be at most 72 characters';
     if (!RegExp(r'[A-Za-z]').hasMatch(value) || !RegExp(r'\d').hasMatch(value)) {
       return 'Password must contain a letter and a number';
     }
@@ -40,6 +41,23 @@ class Validators {
     if (value == null || !RegExp(r'^[0-9]{6}$').hasMatch(value)) {
       return 'Enter the 6-digit code';
     }
+    return null;
+  }
+
+  static String? hourlyRate(String? value) {
+    final text = value?.trim() ?? '';
+    final rate = double.tryParse(text);
+    if (rate == null || !RegExp(r'^\d+(\.\d{1,3})?$').hasMatch(text)) {
+      return 'Use a number like 20 or 22.5';
+    }
+    if (rate < 1 || rate > 500) return 'Between 1 and 500 JOD';
+    return null;
+  }
+
+  static String? yearsOfExperience(String? value) {
+    final years = int.tryParse(value?.trim() ?? '');
+    if (years == null) return 'Required';
+    if (years > 60) return 'At most 60';
     return null;
   }
 
