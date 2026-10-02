@@ -74,6 +74,16 @@ class AuthApi {
 
   Future<LoginResult> login({required String email, required String password}) async {
     final json = await _client.post('/api/auth/login', {'email': email, 'password': password});
+    return _loginResult(json);
+  }
+
+  /// Members only. The first time, the backend links the member with the same email or creates one.
+  Future<LoginResult> loginWithGoogle(String idToken) async {
+    final json = await _client.post('/api/auth/google', {'idToken': idToken});
+    return _loginResult(json);
+  }
+
+  LoginResult _loginResult(Map<String, dynamic> json) {
     final step = json['twoFactor'] as String?;
     if (step == null) return LoggedIn(AuthResult.fromJson(json));
     return TwoFactorChallenge(
@@ -170,6 +180,11 @@ class AuthApi {
 
   Future<void> disableTwoFactor({required String password, required String code}) =>
       _client.post('/api/users/me/2fa/disable', {'password': password, 'code': code});
+
+  Future<AppUser> updatePhone(String phone) async {
+    final json = await _client.put('/api/users/me/phone', {'phone': phone});
+    return AppUser.fromJson(json);
+  }
 
   Future<AppUser> me() async {
     final json = await _client.get('/api/users/me');

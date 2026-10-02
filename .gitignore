@@ -50,6 +50,9 @@ app.*.map.json
 # Secrets (android/.gitignore covers key.properties and keystores)
 .env
 .env.*
+# Google sign-in client IDs (see the .example files)
+/google_sign_in.json
+/ios/Flutter/GoogleSignIn.xcconfig
 *.pem
 *.p12
 

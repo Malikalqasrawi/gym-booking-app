@@ -20,6 +20,9 @@ class AppUser {
   final String title;
   final bool twoFactorEnabled;
 
+  /// False after signing up with Google, until a password is set with "Forgot password".
+  final bool hasPassword;
+
   const AppUser({
     required this.id,
     required this.fullName,
@@ -28,12 +31,16 @@ class AppUser {
     required this.role,
     required this.title,
     this.twoFactorEnabled = false,
+    this.hasPassword = true,
   });
 
   String get firstName => fullName.split(' ').first;
 
   /// Admins can't turn two-factor authentication off.
   bool get mustUseTwoFactor => role == UserRole.admin;
+
+  /// A member who signed up with Google, which doesn't share phone numbers.
+  bool get needsPhone => role == UserRole.member && phone.isEmpty;
 
   AppUser withTwoFactor(bool enabled) => AppUser(
         id: id,
@@ -43,6 +50,7 @@ class AppUser {
         role: role,
         title: title,
         twoFactorEnabled: enabled,
+        hasPassword: hasPassword,
       );
 
   factory AppUser.fromJson(Map<String, dynamic> json) {
@@ -54,6 +62,7 @@ class AppUser {
       role: UserRole.fromJson(json['role'] as String),
       title: (json['title'] as String?) ?? '',
       twoFactorEnabled: (json['twoFactorEnabled'] as bool?) ?? false,
+      hasPassword: (json['hasPassword'] as bool?) ?? true,
     );
   }
 
@@ -65,5 +74,6 @@ class AppUser {
         'role': role.name.toUpperCase(),
         'title': title,
         'twoFactorEnabled': twoFactorEnabled,
+        'hasPassword': hasPassword,
       };
 }

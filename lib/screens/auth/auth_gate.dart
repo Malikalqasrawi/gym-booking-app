@@ -3,10 +3,12 @@ import 'package:provider/provider.dart';
 
 import '../../state/session_controller.dart';
 import '../home/main_shell.dart';
+import 'add_phone_screen.dart';
 import 'login_screen.dart';
 import 'sign_up_screen.dart';
 
-/// Shows the app's tabs ([MainShell]) when logged in, otherwise the sign-up or login screen.
+/// Shows the app's tabs ([MainShell]) when logged in, otherwise the sign-up or login screen. A
+/// member who signed up with Google is asked for a phone number first.
 class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
 
@@ -26,7 +28,7 @@ class _AuthGateState extends State<AuthGate> {
       // After logout, show Login rather than Sign up: this user already has an account.
       _showLogin = true;
       _wasLoggedIn = true;
-      return const MainShell();
+      return session.user!.needsPhone ? const AddPhoneScreen() : const MainShell();
     }
 
     if (_wasLoggedIn) {

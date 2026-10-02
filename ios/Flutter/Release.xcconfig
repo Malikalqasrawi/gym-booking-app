@@ -1,1 +1,3 @@
 #include "Generated.xcconfig"
+// Google sign-in: the reversed iOS client ID (git-ignored, see GoogleSignIn.xcconfig.example)
+#include? "GoogleSignIn.xcconfig"
