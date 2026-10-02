@@ -95,6 +95,11 @@ class BookingCard extends StatelessWidget {
               Text(showMember ? 'Your reply:' : '${booking.trainerName} replied:', style: muted),
               Text(booking.trainerReply!),
             ],
+            if (booking.status == BookingStatus.cancelled && booking.cancelledByGym) ...[
+              const SizedBox(height: 8),
+              Text('Cancelled by the gym', style: muted),
+              if (booking.cancellationNote != null) Text(booking.cancellationNote!),
+            ],
             if (booking.status == BookingStatus.requested && booking.respondBy != null) ...[
               const SizedBox(height: 8),
               Text(

@@ -70,4 +70,15 @@ void main() {
     expect(booking.payment!.isRefunded, isTrue);
     expect(booking.payment!.refundedAt, DateTime(2026, 10, 2, 8, 0));
   });
+
+  test('a booking cancelled by the gym carries its note', () {
+    final booking = Booking.fromJson({
+      ...json(status: 'CANCELLED'),
+      'cancelledBy': 'GYM',
+      'cancellationNote': 'Your trainer is no longer available.',
+    });
+    expect(booking.cancelledByGym, isTrue);
+    expect(booking.cancellationNote, 'Your trainer is no longer available.');
+    expect(Booking.fromJson(json(status: 'CANCELLED')).cancelledByGym, isFalse);
+  });
 }

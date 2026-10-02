@@ -50,6 +50,8 @@ class Booking {
   final DateTime? cancelUntil; // null when the booking can't be cancelled
   final bool canCancel;
   final PaymentInfo? payment; // set once paid, members only
+  final bool cancelledByGym;
+  final String? cancellationNote; // the gym's reason, when it cancelled
 
   const Booking({
     required this.id,
@@ -73,6 +75,8 @@ class Booking {
     required this.cancelUntil,
     required this.canCancel,
     required this.payment,
+    this.cancelledByGym = false,
+    this.cancellationNote,
   });
 
   String get timeLabel => '$startTime – $endTime';
@@ -107,6 +111,8 @@ class Booking {
       cancelUntil: date('cancelUntil'),
       canCancel: json['canCancel'] as bool? ?? false,
       payment: payment == null ? null : PaymentInfo.fromJson(payment),
+      cancelledByGym: json['cancelledBy'] == 'GYM',
+      cancellationNote: json['cancellationNote'] as String?,
     );
   }
 }

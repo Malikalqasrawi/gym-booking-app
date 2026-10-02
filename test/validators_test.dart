@@ -11,6 +11,11 @@ void main() {
       expect(Validators.password('abcdefgh'), isNotNull);
     });
 
+    test('rejects passwords over 72 characters, like the backend', () {
+      expect(Validators.password('a1' * 36), isNull);
+      expect(Validators.password('${'a1' * 36}b'), isNotNull);
+    });
+
     test('accepts a valid password', () {
       expect(Validators.password('abcdefg1'), isNull);
     });
@@ -23,6 +28,20 @@ void main() {
 
     test('rejects letters', () {
       expect(Validators.phone('07abc'), isNotNull);
+    });
+  });
+
+  group('Validators.hourlyRate', () {
+    test('accepts whole and decimal rates', () {
+      expect(Validators.hourlyRate('20'), isNull);
+      expect(Validators.hourlyRate('22.5'), isNull);
+    });
+
+    test('rejects text, too many decimals and out-of-range values', () {
+      expect(Validators.hourlyRate('abc'), isNotNull);
+      expect(Validators.hourlyRate('20.1234'), isNotNull);
+      expect(Validators.hourlyRate('0.5'), isNotNull);
+      expect(Validators.hourlyRate('600'), isNotNull);
     });
   });
 

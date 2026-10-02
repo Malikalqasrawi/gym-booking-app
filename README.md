@@ -39,6 +39,10 @@ A Flutter app for booking personal-training sessions in a gym chain. Find a bran
 - A home screen with today's sessions and how many requests are waiting.
 - Accept or decline requests (with an optional message) and see the upcoming schedule.
 
+**Admins**
+- Add a trainer with branch, category, rate and profile. The trainer gets an invite code by email, taps "I have an invite code" in the app and chooses their own password.
+- Edit profiles and weekly working hours (with split shifts), resend invites, and deactivate or reactivate trainers. Deactivating cancels the trainer's upcoming bookings and refunds paid ones.
+
 **Everyone:** light and dark mode, clear error messages when the network or server is down, pull to refresh.
 
 ## Architecture
@@ -104,9 +108,9 @@ The tests cover booking JSON parsing (payment deadline, receipts, refunds), mone
 lib/
 ├── config/     backend address and timeouts
 ├── models/     Booking, Trainer, Branch, PaymentStart... (fromJson)
-├── services/   ApiClient, AuthApi, BookingApi, secure token storage, StripeCheckout
+├── services/   ApiClient, AuthApi, BookingApi, AdminApi, secure token storage, StripeCheckout
 ├── state/      SessionController (who is logged in), ThemeController (light/dark)
-├── screens/    auth, booking flow (map, trainers, profile, time), bookings, home, trainer
+├── screens/    admin, auth, booking flow (map, trainers, profile, time), bookings, home, trainer
 ├── widgets/    shared widgets (BookingCard, TrainerAvatar, LoadError, ...)
 ├── theme/      Material 3 light and dark themes
 └── utils/      dates (gym time zone), money (JOD), validators, messages
@@ -118,7 +122,8 @@ lib/
 - [x] Branch map, trainers, profiles, filters, availability
 - [x] Booking requests, trainer answers, My bookings
 - [x] Stripe payments, receipts, refunds
-- [ ] Admin screens
+- [x] Admin: trainer invites, profiles, schedules, deactivation
+- [ ] Admin: bookings overview, blocked dates, branches
 - [ ] Google sign-in
 
 ## License

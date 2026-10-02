@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'screens/auth/auth_gate.dart';
+import 'services/admin_api.dart';
 import 'services/api_client.dart';
 import 'services/auth_api.dart';
 import 'services/booking_api.dart';
@@ -16,6 +17,7 @@ Future<void> main() async {
   final apiClient = ApiClient();
   final authApi = AuthApi(apiClient);
   final bookingApi = BookingApi(apiClient); // shares the auth token held by apiClient
+  final adminApi = AdminApi(apiClient);
   final session = SessionController(
     apiClient: apiClient,
     authApi: authApi,
@@ -30,6 +32,7 @@ Future<void> main() async {
       providers: [
         Provider<AuthApi>.value(value: authApi),
         Provider<BookingApi>.value(value: bookingApi),
+        Provider<AdminApi>.value(value: adminApi),
         ChangeNotifierProvider<SessionController>.value(value: session),
         ChangeNotifierProvider<ThemeController>.value(value: themeController),
       ],

@@ -52,6 +52,20 @@ class AuthApi {
     return AuthResult.fromJson(json);
   }
 
+  /// Sets an invited trainer's password with the emailed invite code and logs them in.
+  Future<AuthResult> acceptInvite({
+    required String email,
+    required String code,
+    required String password,
+  }) async {
+    final json = await _client.post('/api/auth/accept-invite', {
+      'email': email,
+      'code': code,
+      'password': password,
+    });
+    return AuthResult.fromJson(json);
+  }
+
   Future<AppUser> me() async {
     final json = await _client.get('/api/users/me');
     return AppUser.fromJson(json);
