@@ -41,3 +41,36 @@ class Branch {
     );
   }
 }
+
+/// What the admin fills in to add or edit a branch.
+class BranchDraft {
+  final String name;
+  final String address;
+  final String city;
+  final LatLng position;
+  final String phone; // optional, empty if none
+  final String openingTime; // HH:mm
+  final String closingTime;
+
+  const BranchDraft({
+    required this.name,
+    required this.address,
+    required this.city,
+    required this.position,
+    required this.phone,
+    required this.openingTime,
+    required this.closingTime,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'name': name.trim(),
+        'address': address.trim(),
+        'city': city.trim(),
+        // 6 decimals is about 10 cm, plenty for a map pin.
+        'latitude': double.parse(position.latitude.toStringAsFixed(6)),
+        'longitude': double.parse(position.longitude.toStringAsFixed(6)),
+        if (phone.trim().isNotEmpty) 'phone': phone.trim(),
+        'openingTime': openingTime,
+        'closingTime': closingTime,
+      };
+}

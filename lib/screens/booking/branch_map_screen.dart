@@ -6,6 +6,7 @@ import '../../models/branch.dart';
 import '../../services/api_exception.dart';
 import '../../services/booking_api.dart';
 import '../../widgets/load_error.dart';
+import '../../widgets/map_tiles.dart';
 import '../../widgets/theme_toggle_button.dart';
 import 'trainers_screen.dart';
 
@@ -81,24 +82,6 @@ class _BranchMapScreenState extends State<BranchMapScreen> {
 
   Widget _buildMap(List<Branch> branches, Branch selected) {
     final scheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    // OSM only serves light tiles; in dark mode invert them into a dark grey map.
-    Widget tiles = TileLayer(
-      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-      userAgentPackageName: 'com.malik.gym_booking', // required by the OSM tile usage policy
-    );
-    if (isDark) {
-      tiles = ColorFiltered(
-        colorFilter: const ColorFilter.matrix(<double>[
-          -0.2126, -0.7152, -0.0722, 0, 255,
-          -0.2126, -0.7152, -0.0722, 0, 255,
-          -0.2126, -0.7152, -0.0722, 0, 255,
-          0, 0, 0, 1, 0,
-        ]),
-        child: tiles,
-      );
-    }
 
     return FlutterMap(
       mapController: _mapController,
@@ -110,7 +93,7 @@ class _BranchMapScreenState extends State<BranchMapScreen> {
         ),
       ),
       children: [
-        tiles,
+        const MapTiles(),
         MarkerLayer(
           markers: [
             for (final branch in branches)
@@ -131,10 +114,7 @@ class _BranchMapScreenState extends State<BranchMapScreen> {
               ),
           ],
         ),
-        // Attribution is required by OSM.
-        RichAttributionWidget(
-          attributions: [TextSourceAttribution('OpenStreetMap contributors')],
-        ),
+        const MapAttribution(),
       ],
     );
   }

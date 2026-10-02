@@ -73,7 +73,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
         code: _codeController.text,
       );
       await session.startSession(result);
-      // AuthGate, below this route, now shows HomeScreen.
+      // AuthGate, below this route, now shows the app.
       navigator.popUntil((route) => route.isFirst);
     } on ApiException catch (e) {
       if (mounted) showError(context, e.message);

@@ -28,12 +28,13 @@ A Flutter app for booking personal-training sessions in a gym chain. Find a bran
 ## What it does
 
 **Members**
-- Sign up with an email verification code, then stay logged in (the token is stored encrypted).
+- Sign up with an email verification code, then stay logged in (the token is stored encrypted). Forgot the password? Reset it with a code sent by email.
 - See all 5 branches on an OpenStreetMap map, then the trainers at a branch, filtered by category, gender and price.
 - Open a trainer's profile: experience, certifications, languages, weekly schedule.
 - Pick a date, a duration (30 to 90 min) and a free start time, and send a request.
 - Once the trainer accepts, pay with Stripe's own payment screen (card details never touch our servers).
 - Follow everything in **My bookings**: waiting, awaiting payment (with the deadline), confirmed, with receipts and refunds.
+- If the gym cancels a session, the home screen says so, with the reason and the refund, until dismissed.
 
 **Trainers**
 - A home screen with today's sessions and how many requests are waiting.
@@ -42,8 +43,11 @@ A Flutter app for booking personal-training sessions in a gym chain. Find a bran
 **Admins**
 - Add a trainer with branch, category, rate and profile. The trainer gets an invite code by email, taps "I have an invite code" in the app and chooses their own password.
 - Edit profiles and weekly working hours (with split shifts), resend invites, and deactivate or reactivate trainers. Deactivating cancels the trainer's upcoming bookings and refunds paid ones.
+- See every booking, upcoming or past, filtered by status and branch, with the member's contact details. Cancel any session before it starts, with an optional message to the member and a full refund if it was paid.
+- Block time: close a whole branch or give one trainer time off, for whole days or set hours. The app shows how many bookings that cancels before saving, and members see why a day is closed.
+- Add and edit branches, with opening hours and the location picked by tapping the map.
 
-**Everyone:** light and dark mode, clear error messages when the network or server is down, pull to refresh.
+**Everyone:** a bottom navigation bar with tabs for their role and a Profile tab, light and dark mode, clear error messages when the network or server is down, pull to refresh.
 
 ## Architecture
 
@@ -100,7 +104,7 @@ flutter analyze   # lint rules from analysis_options.yaml
 flutter test      # unit + widget tests
 ```
 
-The tests cover booking JSON parsing (payment deadline, receipts, refunds), money and date formatting, form validators, and a widget test. GitHub Actions runs both commands on every push and pull request.
+The tests cover booking JSON parsing (payment deadline, receipts, refunds), the admin models (trainers, bookings, blocked times, branches), the home-screen cancellation notices, money and date formatting, form validators, and widget tests (password reset, tab switching). GitHub Actions runs both commands on every push and pull request.
 
 ## Project structure
 
@@ -123,7 +127,7 @@ lib/
 - [x] Booking requests, trainer answers, My bookings
 - [x] Stripe payments, receipts, refunds
 - [x] Admin: trainer invites, profiles, schedules, deactivation
-- [ ] Admin: bookings overview, blocked dates, branches
+- [x] Admin: bookings overview, blocked times, branches
 - [ ] Google sign-in
 
 ## License

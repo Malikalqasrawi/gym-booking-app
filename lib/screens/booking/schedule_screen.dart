@@ -191,9 +191,12 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     }
     final slots = _availability?.slots ?? const <TimeSlot>[];
     if (slots.isEmpty) {
-      final reason = widget.trainer.worksOn(_date)
-          ? 'No free times left on this day. Try another day or a shorter session.'
-          : '${widget.trainer.fullName.split(' ').first} doesn\'t work on ${weekdayShort(_date)}. Pick another day.';
+      final closed = _availability?.closedReason;
+      final reason = closed != null
+          ? '$closed Pick another day.'
+          : widget.trainer.worksOn(_date)
+              ? 'No free times left on this day. Try another day or a shorter session.'
+              : '${widget.trainer.fullName.split(' ').first} doesn\'t work on ${weekdayShort(_date)}. Pick another day.';
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: Text(reason, style: TextStyle(color: muted)),

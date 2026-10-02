@@ -4,9 +4,10 @@ import 'package:provider/provider.dart';
 import '../../models/admin_trainer.dart';
 import '../../services/admin_api.dart';
 import '../../services/api_exception.dart';
-import 'admin_trainers_screen.dart';
+import '../home/main_shell.dart';
+import 'blocked_times_screen.dart';
 
-/// Admin section of the home screen: trainer counts and a way into trainer management.
+/// Admin section of the home screen: trainer counts and the ways into each admin area.
 class AdminHome extends StatefulWidget {
   const AdminHome({super.key});
 
@@ -27,10 +28,10 @@ class _AdminHomeState extends State<AdminHome> {
     _trainers = context.read<AdminApi>().trainers();
   }
 
-  Future<void> _openTrainers() async {
-    await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AdminTrainersScreen()));
+  Future<void> _open(Widget screen) async {
+    await Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
     if (!mounted) return;
-    setState(_load); // counts may have changed there
+    setState(_load); // trainer counts may have changed there
   }
 
   @override
@@ -86,9 +87,28 @@ class _AdminHomeState extends State<AdminHome> {
             ),
             const SizedBox(height: 20),
             FilledButton.icon(
-              onPressed: _openTrainers,
+              onPressed: () => TabSwitcher.goTo(context, AppTab.trainers),
               icon: const Icon(Icons.groups_outlined),
               label: const Text('Manage trainers'),
+            ),
+            const SizedBox(height: 16),
+            _AdminLink(
+              icon: Icons.event_note_outlined,
+              title: 'Bookings',
+              subtitle: 'Every session, and cancelling one with a full refund',
+              onTap: () => TabSwitcher.goTo(context, AppTab.bookings),
+            ),
+            _AdminLink(
+              icon: Icons.event_busy_outlined,
+              title: 'Blocked times',
+              subtitle: 'Close a branch or give a trainer time off',
+              onTap: () => _open(const BlockedTimesScreen()),
+            ),
+            _AdminLink(
+              icon: Icons.store_mall_directory_outlined,
+              title: 'Branches',
+              subtitle: 'Add or edit branches, opening hours and location',
+              onTap: () => TabSwitcher.goTo(context, AppTab.branches),
             ),
           ],
         );
@@ -121,6 +141,33 @@ class _Stat extends StatelessWidget {
           Text('$value', style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
           Text(label, style: const TextStyle(fontSize: 12)),
         ],
+      ),
+    );
+  }
+}
+
+class _AdminLink extends StatelessWidget {
+  const _AdminLink({required this.icon, required this.title, required this.subtitle, required this.onTap});
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Card(
+      elevation: 0,
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      color: scheme.surfaceContainerHighest.withValues(alpha: 0.6),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: ListTile(
+        onTap: onTap,
+        leading: Icon(icon, color: scheme.primary),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+        subtitle: Text(subtitle),
+        trailing: const Icon(Icons.chevron_right),
       ),
     );
   }
