@@ -18,6 +18,7 @@ class AppUser {
   final String phone;
   final UserRole role;
   final String title;
+  final bool twoFactorEnabled;
 
   const AppUser({
     required this.id,
@@ -26,9 +27,23 @@ class AppUser {
     required this.phone,
     required this.role,
     required this.title,
+    this.twoFactorEnabled = false,
   });
 
   String get firstName => fullName.split(' ').first;
+
+  /// Admins can't turn two-factor authentication off.
+  bool get mustUseTwoFactor => role == UserRole.admin;
+
+  AppUser withTwoFactor(bool enabled) => AppUser(
+        id: id,
+        fullName: fullName,
+        email: email,
+        phone: phone,
+        role: role,
+        title: title,
+        twoFactorEnabled: enabled,
+      );
 
   factory AppUser.fromJson(Map<String, dynamic> json) {
     return AppUser(
@@ -38,6 +53,7 @@ class AppUser {
       phone: (json['phone'] as String?) ?? '',
       role: UserRole.fromJson(json['role'] as String),
       title: (json['title'] as String?) ?? '',
+      twoFactorEnabled: (json['twoFactorEnabled'] as bool?) ?? false,
     );
   }
 
@@ -48,5 +64,6 @@ class AppUser {
         'phone': phone,
         'role': role.name.toUpperCase(),
         'title': title,
+        'twoFactorEnabled': twoFactorEnabled,
       };
 }

@@ -16,6 +16,7 @@ class AuthGate extends StatefulWidget {
 
 class _AuthGateState extends State<AuthGate> {
   bool _showLogin = false;
+  bool _wasLoggedIn = false;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +25,16 @@ class _AuthGateState extends State<AuthGate> {
     if (session.isLoggedIn) {
       // After logout, show Login rather than Sign up: this user already has an account.
       _showLogin = true;
+      _wasLoggedIn = true;
       return const MainShell();
+    }
+
+    if (_wasLoggedIn) {
+      _wasLoggedIn = false;
+      // The session ended: also close any screen or dialog opened on top of the app.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
+      });
     }
 
     if (_showLogin) {
