@@ -3,14 +3,16 @@ import 'package:provider/provider.dart';
 
 import '../../models/booking.dart';
 import '../../models/branch.dart';
+import '../../models/notices.dart';
 import '../../services/api_exception.dart';
 import '../../services/booking_api.dart';
+import '../../services/notice_storage.dart';
 import '../../utils/dates.dart';
+import '../../utils/money.dart';
 import '../../widgets/booking_card.dart';
 import '../../widgets/trainer_avatar.dart';
-import '../booking/branch_map_screen.dart';
 import '../booking/trainers_screen.dart';
-import '../bookings/my_bookings_screen.dart';
+import 'main_shell.dart';
 
 class MemberHome extends StatefulWidget {
   const MemberHome({super.key});
@@ -22,11 +24,20 @@ class MemberHome extends StatefulWidget {
 class _MemberHomeState extends State<MemberHome> {
   late Future<List<Booking>> _bookings;
   late Future<List<Branch>> _branches;
+  Set<int>? _dismissed; // null until read from storage, so notices don't flash
 
   @override
   void initState() {
     super.initState();
     _load();
+    NoticeStorage.dismissed().then((ids) {
+      if (mounted) setState(() => _dismissed = ids);
+    });
+  }
+
+  void _dismiss(int bookingId) {
+    setState(() => _dismissed = {...?_dismissed, bookingId});
+    NoticeStorage.dismiss(bookingId);
   }
 
   void _load() {
@@ -49,10 +60,16 @@ class _MemberHomeState extends State<MemberHome> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        _GymCancellationNotices(
+          bookings: _bookings,
+          dismissed: _dismissed,
+          onDismiss: _dismiss,
+          onBookAgain: () => TabSwitcher.goTo(context, AppTab.book),
+        ),
         _NextSessionCard(
           bookings: _bookings,
-          onOpenBookings: () => _open(const MyBookingsScreen()),
-          onBook: () => _open(const BranchMapScreen()),
+          onOpenBookings: () => TabSwitcher.goTo(context, AppTab.bookings),
+          onBook: () => TabSwitcher.goTo(context, AppTab.book),
           onRetry: () => setState(_load),
         ),
         const SizedBox(height: 16),
@@ -63,7 +80,7 @@ class _MemberHomeState extends State<MemberHome> {
                 icon: Icons.map_outlined,
                 title: 'Book a session',
                 subtitle: 'Pick a branch on the map',
-                onTap: () => _open(const BranchMapScreen()),
+                onTap: () => TabSwitcher.goTo(context, AppTab.book),
               ),
             ),
             const SizedBox(width: 12),
@@ -72,7 +89,7 @@ class _MemberHomeState extends State<MemberHome> {
                 icon: Icons.event_note_outlined,
                 title: 'My bookings',
                 subtitle: 'Upcoming and history',
-                onTap: () => _open(const MyBookingsScreen()),
+                onTap: () => TabSwitcher.goTo(context, AppTab.bookings),
               ),
             ),
           ],
@@ -105,6 +122,112 @@ class _MemberHomeState extends State<MemberHome> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// One card per session the gym cancelled, until the member taps "Got it".
+class _GymCancellationNotices extends StatelessWidget {
+  const _GymCancellationNotices({
+    required this.bookings,
+    required this.dismissed,
+    required this.onDismiss,
+    required this.onBookAgain,
+  });
+
+  final Future<List<Booking>> bookings;
+  final Set<int>? dismissed;
+  final ValueChanged<int> onDismiss;
+  final VoidCallback onBookAgain;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<Booking>>(
+      future: bookings,
+      builder: (context, snapshot) {
+        final seen = dismissed;
+        if (!snapshot.hasData || seen == null) return const SizedBox.shrink();
+        final notices = gymCancellationNotices(snapshot.data!, seen, gymNow());
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (final booking in notices)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: _GymCancellationCard(
+                  booking: booking,
+                  onDismiss: () => onDismiss(booking.id),
+                  onBookAgain: onBookAgain,
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _GymCancellationCard extends StatelessWidget {
+  const _GymCancellationCard({required this.booking, required this.onDismiss, required this.onBookAgain});
+
+  final Booking booking;
+  final VoidCallback onDismiss;
+  final VoidCallback onBookAgain;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    final fg = scheme.onErrorContainer;
+    final payment = booking.payment;
+
+    return Card(
+      elevation: 0,
+      color: scheme.errorContainer,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.event_busy, color: fg),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text('The gym cancelled your session',
+                      style: text.titleMedium?.copyWith(color: fg, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text('${booking.trainerName} · ${booking.dateLabel} at ${booking.startTime}', style: TextStyle(color: fg)),
+            if (booking.cancellationNote != null)
+              Text('Reason: ${booking.cancellationNote}', style: TextStyle(color: fg)),
+            Text(
+              payment != null && payment.isRefunded
+                  ? 'You were refunded ${formatMoney(payment.amount, payment.currency)} to ${payment.method}.'
+                  : 'Nothing was charged.',
+              style: TextStyle(color: fg),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: onBookAgain,
+                  style: TextButton.styleFrom(foregroundColor: fg),
+                  child: const Text('Book another time'),
+                ),
+                TextButton(
+                  onPressed: onDismiss,
+                  style: TextButton.styleFrom(foregroundColor: fg),
+                  child: const Text('Got it'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

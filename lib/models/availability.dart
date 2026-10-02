@@ -15,8 +15,14 @@ class Availability {
   final String date;
   final int durationMinutes;
   final List<TimeSlot> slots;
+  final String? closedReason; // set when the branch is closed or the trainer is off all day
 
-  const Availability({required this.date, required this.durationMinutes, required this.slots});
+  const Availability({
+    required this.date,
+    required this.durationMinutes,
+    required this.slots,
+    this.closedReason,
+  });
 
   factory Availability.fromJson(Map<String, dynamic> json) {
     return Availability(
@@ -25,6 +31,7 @@ class Availability {
       slots: ((json['slots'] as List?) ?? const [])
           .map((item) => TimeSlot.fromJson(item as Map<String, dynamic>))
           .toList(),
+      closedReason: json['closedReason'] as String?,
     );
   }
 }

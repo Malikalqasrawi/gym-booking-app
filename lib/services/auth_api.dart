@@ -66,6 +66,26 @@ class AuthApi {
     return AuthResult.fromJson(json);
   }
 
+  /// Asks for a password reset code. The backend answers the same whether or not the email has an account.
+  Future<String> forgotPassword(String email) async {
+    final json = await _client.post('/api/auth/forgot-password', {'email': email});
+    return json['message'] as String;
+  }
+
+  /// Sets a new password with the emailed reset code. The user then logs in with it.
+  Future<String> resetPassword({
+    required String email,
+    required String code,
+    required String password,
+  }) async {
+    final json = await _client.post('/api/auth/reset-password', {
+      'email': email,
+      'code': code,
+      'password': password,
+    });
+    return json['message'] as String;
+  }
+
   Future<AppUser> me() async {
     final json = await _client.get('/api/users/me');
     return AppUser.fromJson(json);

@@ -13,6 +13,7 @@ import '../../widgets/password_field.dart';
 import '../../widgets/social_sign_in_buttons.dart';
 import '../../widgets/theme_toggle_button.dart';
 import 'accept_invite_screen.dart';
+import 'forgot_password_screen.dart';
 import 'verify_email_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -48,7 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _loading = true);
     try {
       final result = await authApi.login(email: email, password: _passwordController.text);
-      await session.startSession(result); // AuthGate then shows HomeScreen
+      await session.startSession(result); // AuthGate then shows the app
     } on ApiException catch (e) {
       if (!mounted) return;
       if (e.code == 'EMAIL_NOT_VERIFIED') {
@@ -79,6 +80,16 @@ class _LoginScreenState extends State<LoginScreen> {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => VerifyEmailScreen(email: email)),
     );
+  }
+
+  Future<void> _openForgotPassword() async {
+    final email = await Navigator.of(context).push<String>(
+      MaterialPageRoute(builder: (_) => ForgotPasswordScreen(email: _emailController.text.trim())),
+    );
+    if (!mounted || email == null) return;
+    _emailController.text = email;
+    _passwordController.clear();
+    showInfo(context, 'Password changed. Log in with your new password.');
   }
 
   void _openInvite() {
@@ -122,7 +133,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     onSubmitted: (_) => _submit(),
                     validator: (value) => Validators.required(value, 'Password'),
                   ),
-                  const SizedBox(height: 24),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: _loading ? null : _openForgotPassword,
+                      child: const Text('Forgot password?'),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   FilledButton(
                     onPressed: _loading ? null : _submit,
                     child: _loading

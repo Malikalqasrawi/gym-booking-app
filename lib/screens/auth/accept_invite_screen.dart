@@ -55,7 +55,7 @@ class _AcceptInviteScreenState extends State<AcceptInviteScreen> {
         password: _passwordController.text,
       );
       await session.startSession(result);
-      navigator.popUntil((route) => route.isFirst); // AuthGate now shows HomeScreen
+      navigator.popUntil((route) => route.isFirst); // AuthGate now shows the app
     } on ApiException catch (e) {
       if (mounted) showError(context, e.message);
     } finally {

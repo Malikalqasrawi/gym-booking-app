@@ -6,7 +6,7 @@ import '../../services/api_exception.dart';
 import '../../services/booking_api.dart';
 import '../../utils/dates.dart';
 import '../../widgets/trainer_avatar.dart';
-import '../trainer/trainer_requests_screen.dart';
+import 'main_shell.dart';
 
 class TrainerHome extends StatefulWidget {
   const TrainerHome({super.key});
@@ -30,11 +30,7 @@ class _TrainerHomeState extends State<TrainerHome> {
     _data = Future.wait([api.trainerRequests(), api.trainerSchedule()]);
   }
 
-  Future<void> _openRequests() async {
-    await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TrainerRequestsScreen()));
-    if (!mounted) return;
-    setState(_load); // requests may have been answered there
-  }
+  void _openRequests() => TabSwitcher.goTo(context, AppTab.sessions);
 
   @override
   Widget build(BuildContext context) {
