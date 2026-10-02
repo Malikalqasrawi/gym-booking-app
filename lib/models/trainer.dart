@@ -35,6 +35,10 @@ class Trainer {
   final List<String> certifications;
   final List<WorkingHours> schedule;
 
+  /// 1.0 to 5.0 from members' reviews; null until the trainer has one.
+  final double? averageRating;
+  final int reviewCount;
+
   const Trainer({
     required this.id,
     required this.fullName,
@@ -50,6 +54,8 @@ class Trainer {
     required this.tags,
     required this.certifications,
     required this.schedule,
+    this.averageRating,
+    this.reviewCount = 0,
   });
 
   bool get isFemale => gender == 'FEMALE';
@@ -96,6 +102,8 @@ class Trainer {
       schedule: ((json['schedule'] as List?) ?? const [])
           .map((item) => WorkingHours.fromJson(item as Map<String, dynamic>))
           .toList(),
+      averageRating: (json['averageRating'] as num?)?.toDouble(),
+      reviewCount: (json['reviewCount'] as num?)?.toInt() ?? 0,
     );
   }
 

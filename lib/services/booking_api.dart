@@ -2,6 +2,7 @@ import '../models/availability.dart';
 import '../models/booking.dart';
 import '../models/branch.dart';
 import '../models/payment.dart';
+import '../models/review.dart';
 import '../models/trainer.dart';
 import '../models/training_category.dart';
 import '../utils/dates.dart';
@@ -40,6 +41,39 @@ class BookingApi {
         .map((item) => Trainer.fromJson(item as Map<String, dynamic>))
         .toList();
   }
+
+  /// Trainers at every branch, e.g. all yoga trainers.
+  Future<List<Trainer>> getTrainers({TrainingCategory? category}) async {
+    final path = Uri(
+      path: '/api/trainers',
+      queryParameters: category == null ? null : {'category': category.code},
+    ).toString();
+    final json = await _client.get(path);
+    return (json['data'] as List)
+        .map((item) => Trainer.fromJson(item as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// A trainer's average and latest reviews, for their profile.
+  Future<TrainerReviews> trainerReviews(int trainerId) async =>
+      TrainerReviews.fromJson(await _client.get('/api/trainers/$trainerId/reviews'));
+
+  /// Rates a finished session (members). Final once sent.
+  Future<Review> rateSession(int bookingId, {required int rating, String? comment}) async =>
+      Review.fromJson(await _client.post('/api/bookings/$bookingId/review', {
+        'rating': rating,
+        if (comment != null && comment.trim().isNotEmpty) 'comment': comment.trim(),
+      }));
+
+  /// The logged-in trainer's own reviews.
+  Future<TrainerReviews> myReviews() async => TrainerReviews.fromJson(await _client.get('/api/trainer/reviews'));
+
+  /// The trainer's answer to a review; answering again replaces it.
+  Future<Review> replyToReview(int reviewId, String reply) async =>
+      Review.fromJson(await _client.put('/api/trainer/reviews/$reviewId/reply', {'reply': reply.trim()}));
+
+  /// Throws TRAINER_NOT_FOUND if the trainer no longer takes bookings.
+  Future<Trainer> getTrainer(int trainerId) async => Trainer.fromJson(await _client.get('/api/trainers/$trainerId'));
 
   Future<Availability> getAvailability({
     required int trainerId,

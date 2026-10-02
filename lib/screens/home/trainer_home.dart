@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/booking.dart';
+import '../../models/review.dart';
 import '../../services/api_exception.dart';
 import '../../services/booking_api.dart';
 import '../../utils/dates.dart';
+import '../../widgets/star_rating.dart';
 import '../../widgets/trainer_avatar.dart';
+import '../trainer/my_reviews_screen.dart';
 import 'main_shell.dart';
 
 class TrainerHome extends StatefulWidget {
@@ -18,6 +21,7 @@ class TrainerHome extends StatefulWidget {
 class _TrainerHomeState extends State<TrainerHome> {
   /// [requests, schedule]. Kept in a field so rebuilds don't refetch.
   late Future<List<List<Booking>>> _data;
+  late Future<TrainerReviews> _reviews;
 
   @override
   void initState() {
@@ -28,9 +32,16 @@ class _TrainerHomeState extends State<TrainerHome> {
   void _load() {
     final api = context.read<BookingApi>();
     _data = Future.wait([api.trainerRequests(), api.trainerSchedule()]);
+    _reviews = api.myReviews();
   }
 
   void _openRequests() => TabSwitcher.goTo(context, AppTab.sessions);
+
+  Future<void> _openReviews() async {
+    await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const MyReviewsScreen()));
+    if (!mounted) return;
+    setState(_load);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +107,54 @@ class _TrainerHomeState extends State<TrainerHome> {
                   ? 'Open requests & schedule'
                   : 'Answer ${requests.length} ${requests.length == 1 ? 'request' : 'requests'}'),
             ),
+            const SizedBox(height: 16),
+            _ReviewsLink(reviews: _reviews, onTap: _openReviews),
           ],
+        );
+      },
+    );
+  }
+}
+
+/// The trainer's rating and how many reviews still have no reply; opens their reviews.
+class _ReviewsLink extends StatelessWidget {
+  const _ReviewsLink({required this.reviews, required this.onTap});
+
+  final Future<TrainerReviews> reviews;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return FutureBuilder<TrainerReviews>(
+      future: reviews,
+      builder: (context, snapshot) {
+        final data = snapshot.data;
+        final String subtitle;
+        if (data == null) {
+          subtitle = snapshot.hasError ? 'See what members said' : 'Loading…';
+        } else if (data.reviewCount == 0) {
+          subtitle = 'No reviews yet';
+        } else {
+          final unanswered = data.reviews.where((review) => review.reply == null).length;
+          subtitle = '${data.averageRating!.toStringAsFixed(1)} average · '
+              '${data.reviewCount} ${data.reviewCount == 1 ? 'review' : 'reviews'}'
+              '${unanswered > 0 ? ' · $unanswered without a reply' : ''}';
+        }
+
+        return Card(
+          elevation: 0,
+          margin: EdgeInsets.zero,
+          color: scheme.surfaceContainerHighest.withValues(alpha: 0.6),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: ListTile(
+            onTap: onTap,
+            leading: const Icon(Icons.star_rounded, color: starColor),
+            title: const Text('Your reviews', style: TextStyle(fontWeight: FontWeight.w600)),
+            subtitle: Text(subtitle),
+            trailing: const Icon(Icons.chevron_right),
+          ),
         );
       },
     );

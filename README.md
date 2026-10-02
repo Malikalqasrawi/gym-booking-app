@@ -29,17 +29,20 @@ A Flutter app for booking personal-training sessions in a gym chain. Find a bran
 
 **Members**
 - Sign up with an email verification code, or with Google in one tap (the app then asks for a phone number once), then stay logged in for 30 days (the tokens are stored encrypted, and the 15-minute access token is renewed in the background). Forgot the password? Reset it with a code sent by email.
+- A home screen with the next session, "Book again" for the trainer of the last session, training categories that list trainers from every branch, and all branches with whether they're open right now.
 - See all 5 branches on an OpenStreetMap map, then the trainers at a branch, filtered by category, gender and price.
-- Open a trainer's profile: experience, certifications, languages, weekly schedule.
+- Open a trainer's profile: experience, certifications, languages, weekly schedule, star rating and the latest reviews.
 - Phone numbers have a country picker (Jordan first) and are checked against that country's rules, so a Jordanian mobile must start with 077, 078 or 079.
 - Pick a date, a duration (30 to 90 min) and a free start time, and send a request. Before the first request, the member confirms their phone number with a 6-digit code sent by SMS (again after changing it in Profile).
 - Once the trainer accepts, pay with Stripe's own payment screen (card details never touch our servers).
 - Follow everything in **My bookings**: waiting, awaiting payment (with the deadline), confirmed, with receipts and refunds.
 - If the gym cancels a session, the home screen says so, with the reason and the refund, until dismissed.
+- Rate a session with 1 to 5 stars and an optional comment, up to 30 days after it took place (from My bookings, or the card on the home screen). Reviews are final once sent, and profiles show the member's first name and initial only.
 
 **Trainers**
 - A home screen with today's sessions and how many requests are waiting.
 - Accept or decline requests (with an optional message) and see the upcoming schedule.
+- Read their reviews and answer each one; the answer shows under the review and can be edited later.
 
 **Admins**
 - Add a trainer with branch, category, rate and profile. The trainer gets an invite code by email, taps "I have an invite code" in the app and chooses their own password.
@@ -47,6 +50,7 @@ A Flutter app for booking personal-training sessions in a gym chain. Find a bran
 - See every booking, upcoming or past, filtered by status and branch, with the member's contact details. Cancel any session before it starts, with an optional message to the member and a full refund if it was paid.
 - Block time: close a whole branch or give one trainer time off, for whole days or set hours. The app shows how many bookings that cancels before saving, and members see why a day is closed.
 - Add and edit branches, with opening hours and the location picked by tapping the map.
+- Read every review and hide one that breaks the rules, with a reason the member is emailed. Hidden reviews don't count toward the trainer's rating and can be shown again.
 - Log in with a password and a code from an authenticator app. The first login walks through scanning the QR code and saving the recovery codes.
 
 **Everyone:** a bottom navigation bar with tabs for their role and a Profile tab (phone number, change password, two-factor authentication, log out of all devices), light and dark mode, clear error messages when the network or server is down, pull to refresh. Members and trainers can turn on two-factor authentication with an authenticator app such as Google Authenticator, log in with a recovery code when the phone isn't at hand, and move it to a new phone.
@@ -120,7 +124,7 @@ flutter analyze   # lint rules from analysis_options.yaml
 flutter test      # unit + widget tests
 ```
 
-The tests cover booking JSON parsing (payment deadline, receipts, refunds), the admin models (trainers, bookings, blocked times, branches), the home-screen cancellation notices, money and date formatting, form validators, the API client's token renewal (one shared refresh, logout when refused), the two-factor login steps, Google sign-in and the phone number afterwards, phone numbers by country and the SMS code, and widget tests (password reset, tab switching, two-factor setup and recovery codes, the Google button without client IDs, the phone field with its country picker). GitHub Actions runs both commands on every push and pull request.
+The tests cover booking JSON parsing (payment deadline, receipts, refunds), the admin models (trainers, bookings, blocked times, branches), the home screen (cancellation notices, "Book again", branch opening hours), reviews (JSON, ratings, which session to ask about, the rating sheet), money and date formatting, form validators, the API client's token renewal (one shared refresh, logout when refused), the two-factor login steps, Google sign-in and the phone number afterwards, phone numbers by country and the SMS code, and widget tests (password reset, tab switching, two-factor setup and recovery codes, the Google button without client IDs, the phone field with its country picker). GitHub Actions runs both commands on every push and pull request.
 
 ## Project structure
 
@@ -131,7 +135,7 @@ lib/
 ├── services/   ApiClient, AuthApi, BookingApi, AdminApi, GoogleAuth, secure token storage, StripeCheckout
 ├── state/      SessionController (who is logged in), ThemeController (light/dark)
 ├── screens/    admin, auth, booking flow (map, trainers, profile, time), bookings, home, trainer
-├── widgets/    shared widgets (BookingCard, TrainerAvatar, LoadError, ...)
+├── widgets/    shared widgets (BookingCard, TrainerCard, PhoneNumberField, LoadError, ...)
 ├── theme/      Material 3 light and dark themes
 └── utils/      dates (gym time zone), money (JOD), phone numbers, validators, messages
 ```
@@ -148,6 +152,7 @@ lib/
 - [x] Two-factor authentication with an authenticator app
 - [x] Google sign-in for members
 - [x] Phone numbers by country, confirmed by SMS
+- [x] Session reviews, trainer replies and moderation
 
 ## License
 

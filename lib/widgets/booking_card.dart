@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/booking.dart';
 import '../utils/dates.dart';
 import '../utils/money.dart';
+import 'star_rating.dart';
 
 class BookingStatusChip extends StatelessWidget {
   const BookingStatusChip({super.key, required this.status});
@@ -127,7 +128,7 @@ class BookingCard extends StatelessWidget {
                     : 'Paid ${formatMoney(payment.amount, payment.currency)} · ${payment.method}',
               ),
             ],
-            if (booking.status == BookingStatus.paid && !showMember)
+            if (booking.status == BookingStatus.paid && !showMember && booking.isUpcoming)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
@@ -137,6 +138,15 @@ class BookingCard extends StatelessWidget {
                   style: muted.copyWith(fontSize: 12),
                 ),
               ),
+            if (booking.rating != null && !showMember) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Text('You rated ', style: muted),
+                  StarRating(rating: booking.rating!),
+                ],
+              ),
+            ],
             if (actions.isNotEmpty) ...[
               const SizedBox(height: 12),
               Row(

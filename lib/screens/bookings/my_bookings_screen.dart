@@ -10,6 +10,7 @@ import '../../widgets/booking_card.dart';
 import '../../widgets/load_error.dart';
 import '../../widgets/theme_toggle_button.dart';
 import 'checkout_sheet.dart';
+import 'rate_session_sheet.dart';
 
 /// The member's bookings: Upcoming (active and not yet ended) and History (everything else).
 class MyBookingsScreen extends StatefulWidget {
@@ -52,6 +53,13 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
       showInfo(context, 'Paid! Your session with ${paid.trainerName} is confirmed. The receipt is in your email.');
     }
     setState(_load); // reload either way: the payment deadline may have passed meanwhile
+  }
+
+  Future<void> _rate(Booking booking) async {
+    final sent = await showRateSessionSheet(context, booking);
+    if (!sent || !mounted) return;
+    showInfo(context, 'Thanks for your review!');
+    setState(_load);
   }
 
   Future<void> _cancel(Booking booking) async {
@@ -169,6 +177,12 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                   FilledButton(
                     onPressed: _cancellingId == null ? () => _pay(booking) : null,
                     child: Text('Pay ${formatJod(booking.price)}'),
+                  ),
+                if (booking.canReview)
+                  FilledButton.tonalIcon(
+                    onPressed: () => _rate(booking),
+                    icon: const Icon(Icons.star_outline_rounded),
+                    label: const Text('Rate session'),
                   ),
               ],
             ),

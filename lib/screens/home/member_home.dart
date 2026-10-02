@@ -4,14 +4,20 @@ import 'package:provider/provider.dart';
 import '../../models/booking.dart';
 import '../../models/branch.dart';
 import '../../models/notices.dart';
+import '../../models/training_category.dart';
 import '../../services/api_exception.dart';
 import '../../services/booking_api.dart';
 import '../../services/notice_storage.dart';
 import '../../utils/dates.dart';
+import '../../utils/messages.dart';
 import '../../utils/money.dart';
 import '../../widgets/booking_card.dart';
+import '../../widgets/star_rating.dart';
 import '../../widgets/trainer_avatar.dart';
+import '../booking/category_trainers_screen.dart';
+import '../booking/trainer_profile_screen.dart';
 import '../booking/trainers_screen.dart';
+import '../bookings/rate_session_sheet.dart';
 import 'main_shell.dart';
 
 class MemberHome extends StatefulWidget {
@@ -25,6 +31,7 @@ class _MemberHomeState extends State<MemberHome> {
   late Future<List<Booking>> _bookings;
   late Future<List<Branch>> _branches;
   Set<int>? _dismissed; // null until read from storage, so notices don't flash
+  Set<int>? _skippedRatings;
 
   @override
   void initState() {
@@ -33,11 +40,26 @@ class _MemberHomeState extends State<MemberHome> {
     NoticeStorage.dismissed().then((ids) {
       if (mounted) setState(() => _dismissed = ids);
     });
+    NoticeStorage.skippedRatings().then((ids) {
+      if (mounted) setState(() => _skippedRatings = ids);
+    });
   }
 
   void _dismiss(int bookingId) {
     setState(() => _dismissed = {...?_dismissed, bookingId});
     NoticeStorage.dismiss(bookingId);
+  }
+
+  void _skipRating(int bookingId) {
+    setState(() => _skippedRatings = {...?_skippedRatings, bookingId});
+    NoticeStorage.skipRating(bookingId);
+  }
+
+  Future<void> _rate(Booking booking, int stars) async {
+    final sent = await showRateSessionSheet(context, booking, initialRating: stars);
+    if (!sent || !mounted) return;
+    showInfo(context, 'Thanks for your review!');
+    setState(_load);
   }
 
   void _load() {
@@ -72,55 +94,247 @@ class _MemberHomeState extends State<MemberHome> {
           onBook: () => TabSwitcher.goTo(context, AppTab.book),
           onRetry: () => setState(_load),
         ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _ActionTile(
-                icon: Icons.map_outlined,
-                title: 'Book a session',
-                subtitle: 'Pick a branch on the map',
-                onTap: () => TabSwitcher.goTo(context, AppTab.book),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _ActionTile(
-                icon: Icons.event_note_outlined,
-                title: 'My bookings',
-                subtitle: 'Upcoming and history',
-                onTap: () => TabSwitcher.goTo(context, AppTab.bookings),
-              ),
-            ),
-          ],
-        ),
+        _RateSessionCard(bookings: _bookings, skipped: _skippedRatings, onRate: _rate, onSkip: _skipRating),
+        _BookAgainCard(bookings: _bookings, branches: _branches, onOpen: _open),
+        const SizedBox(height: 24),
+        Text('Train by category', style: text.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 10),
+        _CategoryGrid(onTap: (category) => _open(CategoryTrainersScreen(category: category))),
         const SizedBox(height: 24),
         Text('Our branches', style: text.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        SizedBox(
-          height: 128,
-          child: FutureBuilder<List<Branch>>(
-            future: _branches,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState != ConnectionState.done) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              final branches = snapshot.data ?? const <Branch>[];
-              if (branches.isEmpty) {
-                return const Center(child: Text('Could not load the branches.'));
-              }
-              return ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: branches.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 12),
-                itemBuilder: (context, i) => _BranchTile(
-                  branch: branches[i],
-                  onTap: () => _open(TrainersScreen(branch: branches[i])),
-                ),
+        const SizedBox(height: 10),
+        FutureBuilder<List<Branch>>(
+          future: _branches,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              return const Padding(
+                padding: EdgeInsets.all(24),
+                child: Center(child: CircularProgressIndicator()),
               );
-            },
-          ),
+            }
+            final branches = snapshot.data ?? const <Branch>[];
+            if (branches.isEmpty) {
+              return const Text('Could not load the branches.');
+            }
+            final now = gymNow();
+            return Column(
+              children: [
+                for (final branch in branches) ...[
+                  _BranchTile(
+                    branch: branch,
+                    isOpen: branch.isOpenAt(now),
+                    status: branch.openStatusAt(now),
+                    onTap: () => _open(TrainersScreen(branch: branch)),
+                  ),
+                  const SizedBox(height: 10),
+                ],
+              ],
+            );
+          },
         ),
+      ],
+    );
+  }
+}
+
+/// Asks the member to rate their latest finished session. Tapping a star opens the review sheet
+/// with that many stars picked.
+class _RateSessionCard extends StatelessWidget {
+  const _RateSessionCard({required this.bookings, required this.skipped, required this.onRate, required this.onSkip});
+
+  final Future<List<Booking>> bookings;
+  final Set<int>? skipped;
+  final void Function(Booking booking, int stars) onRate;
+  final ValueChanged<int> onSkip;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+
+    return FutureBuilder<List<Booking>>(
+      future: bookings,
+      builder: (context, snapshot) {
+        final seen = skipped;
+        if (!snapshot.hasData || seen == null) return const SizedBox.shrink();
+        final booking = Booking.nextToRate(snapshot.data!, seen);
+        if (booking == null) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(16, 12, 8, 4),
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerHighest.withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    TrainerAvatar(id: booking.trainerId, name: booking.trainerName, radius: 22),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('How was your session with ${booking.trainerName.split(' ').first}?',
+                              style: text.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+                          Text('${booking.dateLabel} · ${booking.branchName}',
+                              style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                        ],
+                      ),
+                    ),
+                    TextButton(onPressed: () => onSkip(booking.id), child: const Text('Not now')),
+                  ],
+                ),
+                Row(
+                  children: [
+                    for (var star = 1; star <= 5; star++)
+                      IconButton(
+                        tooltip: '$star ${star == 1 ? 'star' : 'stars'}',
+                        onPressed: () => onRate(booking, star),
+                        icon: const Icon(Icons.star_outline_rounded, color: starColor, size: 32),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// The trainer of the member's last finished session, to book them again in one tap. Hidden
+/// until the member has had a session.
+class _BookAgainCard extends StatefulWidget {
+  const _BookAgainCard({required this.bookings, required this.branches, required this.onOpen});
+
+  final Future<List<Booking>> bookings;
+  final Future<List<Branch>> branches;
+  final Future<void> Function(Widget screen) onOpen;
+
+  @override
+  State<_BookAgainCard> createState() => _BookAgainCardState();
+}
+
+class _BookAgainCardState extends State<_BookAgainCard> {
+  bool _opening = false;
+
+  /// Loads the trainer's current profile (their branch or rates may have changed) and opens it.
+  Future<void> _open(Booking last) async {
+    final api = context.read<BookingApi>();
+    setState(() => _opening = true);
+    try {
+      final trainer = await api.getTrainer(last.trainerId);
+      final branches = await widget.branches;
+      final branch = branches.where((b) => b.id == trainer.branchId).firstOrNull;
+      if (branch == null || !mounted) return;
+      await widget.onOpen(TrainerProfileScreen(trainer: trainer, branch: branch));
+    } on ApiException catch (e) {
+      if (mounted) showError(context, e.message);
+    } finally {
+      if (mounted) setState(() => _opening = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+
+    return FutureBuilder<List<Booking>>(
+      future: widget.bookings,
+      builder: (context, snapshot) {
+        final last = Booking.lastFinishedSession(snapshot.data ?? const [], gymNow());
+        if (last == null) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: Material(
+            color: scheme.primaryContainer,
+            borderRadius: BorderRadius.circular(18),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(18),
+              onTap: _opening ? null : () => _open(last),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    TrainerAvatar(id: last.trainerId, name: last.trainerName, radius: 24),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Book again', style: text.labelMedium?.copyWith(color: scheme.onPrimaryContainer)),
+                          Text(last.trainerName,
+                              style: text.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold, color: scheme.onPrimaryContainer)),
+                          Text('Last session ${last.dateLabel} · ${last.branchName}',
+                              style: text.bodySmall?.copyWith(color: scheme.onPrimaryContainer)),
+                        ],
+                      ),
+                    ),
+                    _opening
+                        ? const SizedBox.square(dimension: 22, child: CircularProgressIndicator(strokeWidth: 2.5))
+                        : Icon(Icons.chevron_right, color: scheme.onPrimaryContainer),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// One tile per training category, plus "All trainers"; each lists trainers from every branch.
+class _CategoryGrid extends StatelessWidget {
+  const _CategoryGrid({required this.onTap});
+
+  final ValueChanged<TrainingCategory?> onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    Widget tile(IconData icon, String label, TrainingCategory? category) => Material(
+          color: scheme.surfaceContainerHighest.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(16),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () => onTap(category),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                children: [
+                  Icon(icon, color: scheme.primary),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(label,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(), // the home screen scrolls, not the grid
+      mainAxisSpacing: 10,
+      crossAxisSpacing: 10,
+      childAspectRatio: 3,
+      children: [
+        for (final category in TrainingCategory.values) tile(category.icon, category.label, category),
+        tile(Icons.groups_outlined, 'All trainers', null),
       ],
     );
   }
@@ -354,75 +568,63 @@ class _NextSessionCard extends StatelessWidget {
   }
 }
 
-class _ActionTile extends StatelessWidget {
-  const _ActionTile({required this.icon, required this.title, required this.subtitle, required this.onTap});
+/// A branch with whether it is open right now; opens its trainers.
+class _BranchTile extends StatelessWidget {
+  const _BranchTile({required this.branch, required this.isOpen, required this.status, required this.onTap});
 
-  final IconData icon;
-  final String title;
-  final String subtitle;
+  final Branch branch;
+  final bool isOpen;
+  final String status;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final openColor = isDark ? const Color(0xFF81C784) : const Color(0xFF2E7D32);
+
     return Material(
-      color: scheme.primaryContainer,
+      color: scheme.surfaceContainerHighest.withValues(alpha: 0.6),
       borderRadius: BorderRadius.circular(18),
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          padding: const EdgeInsets.all(14),
+          child: Row(
             children: [
-              Icon(icon, color: scheme.onPrimaryContainer),
-              const SizedBox(height: 10),
-              Text(title,
-                  style: TextStyle(fontWeight: FontWeight.bold, color: scheme.onPrimaryContainer)),
-              Text(subtitle, style: TextStyle(fontSize: 12, color: scheme.onPrimaryContainer)),
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: scheme.primaryContainer,
+                child: Icon(Icons.storefront_outlined, color: scheme.onPrimaryContainer),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(branch.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(branch.address,
+                        style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(Icons.circle, size: 8, color: isOpen ? openColor : scheme.onSurfaceVariant),
+                        const SizedBox(width: 6),
+                        Text(status,
+                            style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: isOpen ? openColor : scheme.onSurfaceVariant)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _BranchTile extends StatelessWidget {
-  const _BranchTile({required this.branch, required this.onTap});
-
-  final Branch branch;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return SizedBox(
-      width: 200,
-      child: Material(
-        color: scheme.surfaceContainerHighest.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(18),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(18),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Icons.storefront_outlined, color: scheme.primary),
-                const SizedBox(height: 8),
-                Text(branch.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
-                Text(branch.address,
-                    style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
-                const Spacer(),
-                Text('Open ${branch.hours}', style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
-              ],
-            ),
           ),
         ),
       ),
