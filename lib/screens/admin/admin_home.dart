@@ -5,6 +5,7 @@ import '../../models/admin_trainer.dart';
 import '../../services/admin_api.dart';
 import '../../services/api_exception.dart';
 import '../home/main_shell.dart';
+import 'admin_reviews_screen.dart';
 import 'blocked_times_screen.dart';
 
 /// Admin section of the home screen: trainer counts and the ways into each admin area.
@@ -109,6 +110,12 @@ class _AdminHomeState extends State<AdminHome> {
               title: 'Branches',
               subtitle: 'Add or edit branches, opening hours and location',
               onTap: () => TabSwitcher.goTo(context, AppTab.branches),
+            ),
+            _AdminLink(
+              icon: Icons.reviews_outlined,
+              title: 'Reviews',
+              subtitle: 'Read what members said and hide reviews that break the rules',
+              onTap: () => _open(const AdminReviewsScreen()),
             ),
           ],
         );

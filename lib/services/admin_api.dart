@@ -3,6 +3,7 @@ import '../models/admin_trainer.dart';
 import '../models/blocked_time.dart';
 import '../models/booking.dart';
 import '../models/branch.dart';
+import '../models/review.dart';
 import '../models/trainer.dart';
 import 'api_client.dart';
 
@@ -63,6 +64,19 @@ class AdminApi {
   }
 
   Future<AdminBooking> booking(int id) async => AdminBooking.fromJson(await _client.get('/api/admin/bookings/$id'));
+
+  /// Newest first. [hidden] true or false filters; null means all.
+  Future<List<Review>> reviews({bool? hidden}) async {
+    final path = Uri(path: '/api/admin/reviews', queryParameters: hidden == null ? null : {'hidden': '$hidden'}).toString();
+    final json = await _client.get(path);
+    return (json['data'] as List).map((item) => Review.fromJson(item as Map<String, dynamic>)).toList();
+  }
+
+  /// Hides the review from the trainer's profile; the member is emailed the reason.
+  Future<Review> hideReview(int id, String reason) async =>
+      Review.fromJson(await _client.post('/api/admin/reviews/$id/hide', {'reason': reason.trim()}));
+
+  Future<Review> showReview(int id) async => Review.fromJson(await _client.post('/api/admin/reviews/$id/show', {}));
 
   /// Cancels on the gym's side; a paid session is refunded in full.
   Future<AdminBooking> cancelBooking(int id, {String? reason}) async =>

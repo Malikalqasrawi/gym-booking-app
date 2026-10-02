@@ -1,5 +1,7 @@
 import 'package:latlong2/latlong.dart';
 
+import '../utils/dates.dart';
+
 class Branch {
   final int id;
   final String name;
@@ -26,6 +28,14 @@ class Branch {
   LatLng get position => LatLng(latitude, longitude);
 
   String get hours => '$openingTime – $closingTime';
+
+  /// Whether the branch is open at [now] (gym time), going by its daily opening hours.
+  bool isOpenAt(DateTime now) =>
+      !now.isBefore(atTime(now, openingTime)) && now.isBefore(atTime(now, closingTime));
+
+  /// E.g. "Open now · closes 23:00" or "Closed now · opens 06:00".
+  String openStatusAt(DateTime now) =>
+      isOpenAt(now) ? 'Open now · closes $closingTime' : 'Closed now · opens $openingTime';
 
   factory Branch.fromJson(Map<String, dynamic> json) {
     return Branch(

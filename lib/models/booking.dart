@@ -53,6 +53,10 @@ class Booking {
   final bool cancelledByGym;
   final String? cancellationNote; // the gym's reason, when it cancelled
 
+  /// The member's stars for this session once rated, and whether they can rate it now.
+  final int? rating;
+  final bool canReview;
+
   const Booking({
     required this.id,
     required this.status,
@@ -77,6 +81,8 @@ class Booking {
     required this.payment,
     this.cancelledByGym = false,
     this.cancellationNote,
+    this.rating,
+    this.canReview = false,
   });
 
   String get timeLabel => '$startTime – $endTime';
@@ -85,6 +91,30 @@ class Booking {
 
   /// Active and not yet ended, in gym (Amman) time.
   bool get isUpcoming => status.isActive && atTime(date, endTime).isAfter(gymNow());
+
+  /// The most recent paid session that has already ended at [now], or null if there's none yet.
+  /// The home screen offers to book that trainer again.
+  static Booking? lastFinishedSession(Iterable<Booking> bookings, DateTime now) {
+    Booking? last;
+    for (final booking in bookings) {
+      final ends = atTime(booking.date, booking.endTime);
+      if (booking.status != BookingStatus.paid || ends.isAfter(now)) continue;
+      if (last == null || ends.isAfter(atTime(last.date, last.endTime))) last = booking;
+    }
+    return last;
+  }
+
+  /// The latest session the member can still rate and hasn't skipped, for the home screen.
+  static Booking? nextToRate(Iterable<Booking> bookings, Set<int> skipped) {
+    Booking? latest;
+    for (final booking in bookings) {
+      if (!booking.canReview || skipped.contains(booking.id)) continue;
+      if (latest == null || atTime(booking.date, booking.endTime).isAfter(atTime(latest.date, latest.endTime))) {
+        latest = booking;
+      }
+    }
+    return latest;
+  }
 
   factory Booking.fromJson(Map<String, dynamic> json) {
     DateTime? date(String key) => json[key] == null ? null : DateTime.parse(json[key] as String);
@@ -113,6 +143,8 @@ class Booking {
       payment: payment == null ? null : PaymentInfo.fromJson(payment),
       cancelledByGym: json['cancelledBy'] == 'GYM',
       cancellationNote: json['cancellationNote'] as String?,
+      rating: (json['rating'] as num?)?.toInt(),
+      canReview: json['canReview'] as bool? ?? false,
     );
   }
 }

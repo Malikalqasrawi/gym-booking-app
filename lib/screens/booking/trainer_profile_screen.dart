@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../models/branch.dart';
+import '../../models/review.dart';
 import '../../models/trainer.dart';
+import '../../services/booking_api.dart';
 import '../../utils/dates.dart';
 import '../../utils/money.dart';
+import '../../widgets/review_tile.dart';
+import '../../widgets/star_rating.dart';
 import '../../widgets/theme_toggle_button.dart';
 import '../../widgets/trainer_avatar.dart';
 import 'schedule_screen.dart';
+import 'trainer_reviews_screen.dart';
 
 class TrainerProfileScreen extends StatelessWidget {
   const TrainerProfileScreen({super.key, required this.trainer, required this.branch});
@@ -38,6 +44,10 @@ class TrainerProfileScreen extends StatelessWidget {
           Text(trainer.specialty, textAlign: TextAlign.center, style: TextStyle(color: scheme.primary)),
           const SizedBox(height: 4),
           Text(branch.name, textAlign: TextAlign.center, style: TextStyle(color: scheme.onSurfaceVariant)),
+          if (trainer.reviewCount > 0) ...[
+            const SizedBox(height: 6),
+            Center(child: RatingSummary(average: trainer.averageRating, count: trainer.reviewCount)),
+          ],
           const SizedBox(height: 16),
 
           Row(
@@ -96,6 +106,8 @@ class TrainerProfileScreen extends StatelessWidget {
 
           if (trainer.languages != null) _Section(title: 'Languages', child: Text(trainer.languages!)),
 
+          _ReviewsSection(trainer: trainer),
+
           _Section(
             title: 'Weekly schedule',
             child: Column(
@@ -124,6 +136,71 @@ class TrainerProfileScreen extends StatelessWidget {
             label: Text('Book with ${trainer.fullName.split(' ').first}'),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// The trainer's latest reviews, with a link to all of them.
+class _ReviewsSection extends StatefulWidget {
+  const _ReviewsSection({required this.trainer});
+
+  final Trainer trainer;
+
+  @override
+  State<_ReviewsSection> createState() => _ReviewsSectionState();
+}
+
+class _ReviewsSectionState extends State<_ReviewsSection> {
+  static const _shown = 3;
+
+  late final Future<TrainerReviews> _reviews;
+
+  @override
+  void initState() {
+    super.initState();
+    _reviews = context.read<BookingApi>().trainerReviews(widget.trainer.id);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final muted = TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant);
+
+    return _Section(
+      title: 'Reviews',
+      child: FutureBuilder<TrainerReviews>(
+        future: _reviews,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const Padding(
+              padding: EdgeInsets.all(12),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+          if (snapshot.hasError) {
+            return Text('Could not load the reviews.', style: muted);
+          }
+          final data = snapshot.data!;
+          if (data.reviews.isEmpty) {
+            return Text('No reviews yet.', style: muted);
+          }
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (final review in data.reviews.take(_shown)) ...[
+                ReviewTile(review: review),
+                const SizedBox(height: 10),
+              ],
+              if (data.reviews.length > _shown)
+                OutlinedButton(
+                  onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => TrainerReviewsScreen(trainerName: widget.trainer.fullName, reviews: data),
+                  )),
+                  child: Text('See all ${data.reviewCount} reviews'),
+                ),
+            ],
+          );
+        },
       ),
     );
   }
