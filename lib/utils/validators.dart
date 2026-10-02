@@ -44,6 +44,22 @@ class Validators {
     return null;
   }
 
+  /// A recovery code from two-factor setup, like "k7m2p-x9qrt": 10 letters and digits, the dash optional.
+  static String? recoveryCode(String? value) {
+    if (!_isRecoveryCode(value)) return 'Enter one of your recovery codes, like k7m2p-x9qrt';
+    return null;
+  }
+
+  /// A 6-digit code from the authenticator app, or a recovery code.
+  static String? twoFactorCode(String? value) {
+    final text = value?.trim() ?? '';
+    if (RegExp(r'^[0-9]{6}$').hasMatch(text) || _isRecoveryCode(text)) return null;
+    return 'Enter the 6-digit code from the app, or a recovery code';
+  }
+
+  static bool _isRecoveryCode(String? value) =>
+      RegExp(r'^[A-Za-z0-9]{10}$').hasMatch((value ?? '').replaceAll(RegExp(r'[\s-]'), ''));
+
   static String? hourlyRate(String? value) {
     final text = value?.trim() ?? '';
     final rate = double.tryParse(text);

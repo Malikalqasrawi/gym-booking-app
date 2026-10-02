@@ -6,18 +6,30 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/app_user.dart';
 
-/// Persists the auth token and user across app restarts. Values go through
-/// flutter_secure_storage, encrypted with a key held in the Android Keystore / iOS Keychain.
+/// Persists the tokens and user across app restarts. Values go through flutter_secure_storage,
+/// encrypted with a key held in the Android Keystore / iOS Keychain.
 class SessionStorage {
   static const _tokenKey = 'auth_token';
+  static const _refreshTokenKey = 'auth_refresh_token';
   static const _userKey = 'auth_user';
 
   static const FlutterSecureStorage _secure = FlutterSecureStorage();
 
-  Future<void> save(String token, AppUser user) async {
+  Future<void> save(String token, String refreshToken, AppUser user) async {
+    await saveTokens(token, refreshToken);
+    await saveUser(user);
+  }
+
+  Future<void> saveTokens(String token, String refreshToken) async {
     await _secure.write(key: _tokenKey, value: token);
+    await _secure.write(key: _refreshTokenKey, value: refreshToken);
+  }
+
+  Future<void> saveUser(AppUser user) async {
     await _secure.write(key: _userKey, value: jsonEncode(user.toJson()));
   }
+
+  Future<String?> readRefreshToken() => _secure.read(key: _refreshTokenKey);
 
   Future<String?> readToken() async {
     await _deleteOldPlainTextCopy();
@@ -39,6 +51,7 @@ class SessionStorage {
 
   Future<void> clear() async {
     await _secure.delete(key: _tokenKey);
+    await _secure.delete(key: _refreshTokenKey);
     await _secure.delete(key: _userKey);
   }
 

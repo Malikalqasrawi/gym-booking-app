@@ -28,7 +28,7 @@ A Flutter app for booking personal-training sessions in a gym chain. Find a bran
 ## What it does
 
 **Members**
-- Sign up with an email verification code, then stay logged in (the token is stored encrypted). Forgot the password? Reset it with a code sent by email.
+- Sign up with an email verification code, then stay logged in for 30 days (the tokens are stored encrypted, and the 15-minute access token is renewed in the background). Forgot the password? Reset it with a code sent by email.
 - See all 5 branches on an OpenStreetMap map, then the trainers at a branch, filtered by category, gender and price.
 - Open a trainer's profile: experience, certifications, languages, weekly schedule.
 - Pick a date, a duration (30 to 90 min) and a free start time, and send a request.
@@ -46,8 +46,9 @@ A Flutter app for booking personal-training sessions in a gym chain. Find a bran
 - See every booking, upcoming or past, filtered by status and branch, with the member's contact details. Cancel any session before it starts, with an optional message to the member and a full refund if it was paid.
 - Block time: close a whole branch or give one trainer time off, for whole days or set hours. The app shows how many bookings that cancels before saving, and members see why a day is closed.
 - Add and edit branches, with opening hours and the location picked by tapping the map.
+- Log in with a password and a code from an authenticator app. The first login walks through scanning the QR code and saving the recovery codes.
 
-**Everyone:** a bottom navigation bar with tabs for their role and a Profile tab, light and dark mode, clear error messages when the network or server is down, pull to refresh.
+**Everyone:** a bottom navigation bar with tabs for their role and a Profile tab (change password, two-factor authentication, log out of all devices), light and dark mode, clear error messages when the network or server is down, pull to refresh. Members and trainers can turn on two-factor authentication with an authenticator app such as Google Authenticator, log in with a recovery code when the phone isn't at hand, and move it to a new phone.
 
 ## Architecture
 
@@ -56,9 +57,9 @@ flowchart TD
     Screens["Screens & widgets<br/>(lib/screens, lib/widgets)"] --> State["App state with Provider<br/>SessionController, ThemeController"]
     Screens --> Services["API services<br/>AuthApi, BookingApi"]
     State --> Services
-    Services --> Client["ApiClient (package:http)<br/>adds the login token, turns errors into ApiException"]
+    Services --> Client["ApiClient (package:http)<br/>adds the access token, renews it on 401, turns errors into ApiException"]
     Client -->|"JSON over HTTP"| Backend["gym-booking-backend<br/>REST API"]
-    State --> Storage["flutter_secure_storage<br/>login token, encrypted by the Android Keystore"]
+    State --> Storage["flutter_secure_storage<br/>access and refresh tokens, encrypted by the Android Keystore"]
     Screens --> Map["flutter_map + OpenStreetMap"]
     Screens --> Checkout["StripeCheckout<br/>(flutter_stripe PaymentSheet)"] --> Stripe["Stripe"]
 ```
@@ -79,6 +80,7 @@ flowchart TD
 | Storage | flutter_secure_storage (login token), shared_preferences (theme choice) |
 | Maps | flutter_map + latlong2, OpenStreetMap tiles |
 | Payments | flutter_stripe (PaymentSheet) |
+| Two-factor setup | qr_flutter (the QR code for the authenticator app) |
 | Quality | flutter_lints (analysis_options.yaml), unit + widget tests, GitHub Actions |
 
 ## Getting started
@@ -95,6 +97,7 @@ flowchart TD
 3. **Log in:**
    - Member: sign up in the app. With the backend in console mode, the verification code is printed in the backend's log.
    - Trainer: `sara.trainer@gym.com` / `Trainer1234` (all 22 demo trainers use this password).
+   - Admin: `admin@gym.com` with the password set in the backend. The first login asks you to scan a QR code with an authenticator app on your phone.
 4. **Pay** (Stripe test mode): card `4242 4242 4242 4242`, any future date, any CVC.
 
 ## Tests
@@ -104,7 +107,7 @@ flutter analyze   # lint rules from analysis_options.yaml
 flutter test      # unit + widget tests
 ```
 
-The tests cover booking JSON parsing (payment deadline, receipts, refunds), the admin models (trainers, bookings, blocked times, branches), the home-screen cancellation notices, money and date formatting, form validators, and widget tests (password reset, tab switching). GitHub Actions runs both commands on every push and pull request.
+The tests cover booking JSON parsing (payment deadline, receipts, refunds), the admin models (trainers, bookings, blocked times, branches), the home-screen cancellation notices, money and date formatting, form validators, the API client's token renewal (one shared refresh, logout when refused), the two-factor login steps, and widget tests (password reset, tab switching, two-factor setup and recovery codes). GitHub Actions runs both commands on every push and pull request.
 
 ## Project structure
 
@@ -128,6 +131,8 @@ lib/
 - [x] Stripe payments, receipts, refunds
 - [x] Admin: trainer invites, profiles, schedules, deactivation
 - [x] Admin: bookings overview, blocked times, branches
+- [x] Sessions that renew themselves, change password, log out of all devices
+- [x] Two-factor authentication with an authenticator app
 - [ ] Google sign-in
 
 ## License
