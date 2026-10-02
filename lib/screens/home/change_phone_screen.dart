@@ -1,27 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:phone_form_field/phone_form_field.dart';
 import 'package:provider/provider.dart';
 
+import '../../models/app_user.dart';
 import '../../services/api_exception.dart';
 import '../../state/session_controller.dart';
 import '../../utils/messages.dart';
 import '../../utils/phones.dart';
-import '../../widgets/auth_header.dart';
 import '../../widgets/phone_number_field.dart';
-import '../../widgets/theme_toggle_button.dart';
 
-/// Shown once after signing up with Google, which doesn't share phone numbers. Once saved,
-/// AuthGate shows the app.
-class AddPhoneScreen extends StatefulWidget {
-  const AddPhoneScreen({super.key});
+/// Changes the user's phone number. Pops with true once it is saved.
+class ChangePhoneScreen extends StatefulWidget {
+  const ChangePhoneScreen({super.key});
 
   @override
-  State<AddPhoneScreen> createState() => _AddPhoneScreenState();
+  State<ChangePhoneScreen> createState() => _ChangePhoneScreenState();
 }
 
-class _AddPhoneScreenState extends State<AddPhoneScreen> {
+class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _phone = Phones.controller();
+  late final PhoneController _phone;
   bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _phone = Phones.controller(context.read<SessionController>().user?.phone);
+  }
 
   @override
   void dispose() {
@@ -33,9 +38,11 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final session = context.read<SessionController>();
+    final navigator = Navigator.of(context);
     setState(() => _saving = true);
     try {
       await session.updatePhone(_phone.value.international);
+      navigator.pop(true);
     } on ApiException catch (e) {
       if (mounted) showError(context, e.message);
     } finally {
@@ -45,24 +52,27 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final firstName = context.watch<SessionController>().user?.firstName ?? '';
+    final isMember = context.watch<SessionController>().user?.role == UserRole.member;
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
 
     return Scaffold(
-      appBar: AppBar(actions: const [ThemeToggleButton()]),
+      appBar: AppBar(title: const Text('Phone number')),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+          padding: const EdgeInsets.all(24),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                AuthHeader(
-                  icon: Icons.phone_outlined,
-                  title: firstName.isEmpty ? 'One more thing' : 'Welcome, $firstName',
-                  subtitle: 'Add your phone number so your trainer and the gym can reach you about your sessions.',
+                Text(
+                  isMember
+                      ? 'Your trainer and the gym use this number to reach you about your sessions. '
+                          'A new number has to be confirmed with a code by SMS before your next booking.'
+                      : 'The gym uses this number to reach you.',
+                  style: TextStyle(color: muted),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 20),
                 PhoneNumberField(
                   controller: _phone,
                   autofocus: true,
@@ -74,12 +84,7 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
                   onPressed: _saving ? null : _save,
                   child: _saving
                       ? const SizedBox.square(dimension: 22, child: CircularProgressIndicator(strokeWidth: 2.5))
-                      : const Text('Continue'),
-                ),
-                const SizedBox(height: 8),
-                TextButton(
-                  onPressed: _saving ? null : () => context.read<SessionController>().logout(),
-                  child: const Text('Log out'),
+                      : const Text('Save'),
                 ),
               ],
             ),

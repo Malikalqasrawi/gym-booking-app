@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -216,14 +215,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             onPressed: _loading ? null : _changeEmail,
             child: const Text('Use a different email'),
           ),
-          if (kDebugMode) ...[
-            const SizedBox(height: 8),
-            Text(
-              'Debug build: with console email mode, the code is printed in the backend log.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: muted, fontSize: 12),
-            ),
-          ],
         ],
       ),
     );

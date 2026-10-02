@@ -7,8 +7,10 @@ import '../../models/branch.dart';
 import '../../models/trainer.dart';
 import '../../services/api_exception.dart';
 import '../../services/booking_api.dart';
+import '../../state/session_controller.dart';
 import '../../utils/dates.dart';
 import '../../utils/money.dart';
+import '../home/verify_phone_screen.dart';
 
 /// Sends the booking request. Pops with the created [Booking], or null if dismissed.
 class ConfirmBookingSheet extends StatefulWidget {
@@ -43,6 +45,12 @@ class _ConfirmBookingSheetState extends State<ConfirmBookingSheet> {
   }
 
   Future<void> _send() async {
+    final session = context.read<SessionController>();
+    // Members confirm their phone number with a code by SMS before their first booking.
+    if (session.user?.mustConfirmPhone ?? false) {
+      if (!await confirmPhoneNumber(context) || !mounted) return;
+    }
+
     setState(() {
       _sending = true;
       _error = null;
@@ -59,6 +67,13 @@ class _ConfirmBookingSheetState extends State<ConfirmBookingSheet> {
       Navigator.of(context).pop(booking);
     } on ApiException catch (e) {
       if (!mounted) return;
+      if (e.code == 'PHONE_NOT_VERIFIED') {
+        // The app thought it was confirmed, e.g. the number was changed on another device.
+        setState(() => _sending = false);
+        await session.reloadUser();
+        if (mounted) await _send();
+        return;
+      }
       // Typically SLOT_NOT_AVAILABLE when someone else just took the slot.
       setState(() {
         _sending = false;

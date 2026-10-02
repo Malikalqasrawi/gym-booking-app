@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../models/branch.dart';
 import '../../services/api_exception.dart';
 import '../../services/booking_api.dart';
+import '../../utils/phones.dart';
 import '../../widgets/load_error.dart';
 import '../../widgets/map_tiles.dart';
 import '../../widgets/theme_toggle_button.dart';
@@ -170,7 +171,7 @@ class _BranchPanel extends StatelessWidget {
               const SizedBox(height: 6),
               _InfoRow(icon: Icons.place_outlined, text: '${selected.address}, ${selected.city}'),
               _InfoRow(icon: Icons.schedule, text: 'Open daily ${selected.hours}'),
-              if (selected.phone != null) _InfoRow(icon: Icons.phone_outlined, text: selected.phone!),
+              if (selected.phone != null) _InfoRow(icon: Icons.phone_outlined, text: Phones.display(selected.phone!)),
               const SizedBox(height: 14),
               FilledButton.icon(
                 onPressed: onSeeTrainers,

@@ -5,10 +5,12 @@ import '../../services/api_exception.dart';
 import '../../services/auth_api.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/messages.dart';
+import '../../utils/phones.dart';
 import '../../utils/validators.dart';
 import '../../widgets/auth_header.dart';
 import '../../widgets/auth_switch_prompt.dart';
 import '../../widgets/password_field.dart';
+import '../../widgets/phone_number_field.dart';
 import '../../widgets/social_sign_in_buttons.dart';
 import '../../widgets/theme_toggle_button.dart';
 import 'verify_email_screen.dart';
@@ -26,7 +28,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
+  final _phone = Phones.controller();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
 
@@ -36,7 +38,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
-    _phoneController.dispose();
+    _phone.dispose();
     _passwordController.dispose();
     _confirmController.dispose();
     super.dispose();
@@ -53,7 +55,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       final message = await authApi.signUp(
         fullName: _nameController.text.trim(),
         email: email,
-        phone: Validators.cleanPhone(_phoneController.text),
+        phone: _phone.value.international,
         password: _passwordController.text,
       );
       if (!mounted) return;
@@ -106,19 +108,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     decoration: AppTheme.input(context, label: 'Email', icon: Icons.email_outlined),
                   ),
                   const SizedBox(height: 14),
-                  TextFormField(
-                    controller: _phoneController,
-                    keyboardType: TextInputType.phone,
-                    textInputAction: TextInputAction.next,
-                    autofillHints: const [AutofillHints.telephoneNumber],
-                    validator: Validators.phone,
-                    decoration: AppTheme.input(
-                      context,
-                      label: 'Phone number',
-                      icon: Icons.phone_outlined,
-                      hint: '+962 79 123 4567',
-                    ),
-                  ),
+                  PhoneNumberField(controller: _phone, textInputAction: TextInputAction.next),
                   const SizedBox(height: 14),
                   PasswordField(
                     controller: _passwordController,

@@ -6,8 +6,11 @@ import '../../services/api_exception.dart';
 import '../../state/session_controller.dart';
 import '../../state/theme_controller.dart';
 import '../../utils/messages.dart';
+import '../../utils/phones.dart';
 import 'change_password_screen.dart';
+import 'change_phone_screen.dart';
 import 'two_factor_password_screen.dart';
+import 'verify_phone_screen.dart';
 
 /// The Profile tab: the user's details, password, two-factor authentication and sessions, light or
 /// dark mode, and logging out.
@@ -37,6 +40,31 @@ class ProfileScreen extends StatelessWidget {
     if (changed == true && context.mounted) {
       showInfo(context, 'Password changed. Your other devices were logged out.');
     }
+  }
+
+  Future<void> _changePhone(BuildContext context) async {
+    final changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => const ChangePhoneScreen()),
+    );
+    if (changed != true || !context.mounted) return;
+    final mustConfirm = context.read<SessionController>().user?.mustConfirmPhone ?? false;
+    showInfo(context, mustConfirm
+        ? 'Phone number saved. Confirm it with a code before your next booking.'
+        : 'Phone number saved.');
+  }
+
+  Future<void> _confirmPhone(BuildContext context) async {
+    if (await confirmPhoneNumber(context) && context.mounted) {
+      showInfo(context, 'Phone number confirmed.');
+    }
+  }
+
+  /// E.g. "+962 7 9123 4567 · Not confirmed". Only members confirm their number.
+  static String _phoneStatus(AppUser user) {
+    if (user.phone.isEmpty) return 'Not added';
+    final number = Phones.display(user.phone);
+    if (user.role != UserRole.member) return number;
+    return user.phoneVerified ? '$number · Confirmed' : '$number · Not confirmed';
   }
 
   /// Off: turn it on. On: set up a new phone, or turn it off (not for admins).
@@ -123,6 +151,16 @@ class ProfileScreen extends StatelessWidget {
           _ProfileCard(user: user),
           const SizedBox(height: 16),
           card([
+            ListTile(
+              leading: const Icon(Icons.phone_outlined),
+              title: const Text('Phone number'),
+              subtitle: Text(_phoneStatus(user)),
+              trailing: user.mustConfirmPhone && user.phone.isNotEmpty
+                  ? TextButton(onPressed: () => _confirmPhone(context), child: const Text('Confirm'))
+                  : const Icon(Icons.chevron_right),
+              onTap: () => _changePhone(context),
+            ),
+            const Divider(height: 1),
             ListTile(
               leading: const Icon(Icons.password),
               title: const Text('Change password'),
@@ -212,7 +250,7 @@ class _ProfileCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(user.email, style: text.bodySmall?.copyWith(color: scheme.onPrimaryContainer)),
                   if (user.phone.isNotEmpty)
-                    Text(user.phone, style: text.bodySmall?.copyWith(color: scheme.onPrimaryContainer)),
+                    Text(Phones.display(user.phone), style: text.bodySmall?.copyWith(color: scheme.onPrimaryContainer)),
                 ],
               ),
             ),

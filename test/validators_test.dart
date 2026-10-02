@@ -21,16 +21,6 @@ void main() {
     });
   });
 
-  group('Validators.phone', () {
-    test('accepts Jordanian numbers with spaces', () {
-      expect(Validators.phone('+962 79 123 4567'), isNull);
-    });
-
-    test('rejects letters', () {
-      expect(Validators.phone('07abc'), isNotNull);
-    });
-  });
-
   group('Validators.hourlyRate', () {
     test('accepts whole and decimal rates', () {
       expect(Validators.hourlyRate('20'), isNull);
@@ -43,9 +33,5 @@ void main() {
       expect(Validators.hourlyRate('0.5'), isNotNull);
       expect(Validators.hourlyRate('600'), isNotNull);
     });
-  });
-
-  test('cleanPhone removes spaces and dashes', () {
-    expect(Validators.cleanPhone('+962 79-123 4567'), '+962791234567');
   });
 }

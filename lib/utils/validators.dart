@@ -1,5 +1,5 @@
 /// Client-side form validation mirroring the backend's request rules.
-/// The backend validates again.
+/// The backend validates again. Phone numbers are checked by PhoneNumberField.
 class Validators {
   static String? fullName(String? value) {
     if (value == null || value.trim().isEmpty) return 'Full name is required';
@@ -11,14 +11,6 @@ class Validators {
     if (value == null || value.trim().isEmpty) return 'Email is required';
     final pattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
     if (!pattern.hasMatch(value.trim())) return 'Email is not valid';
-    return null;
-  }
-
-  static String? phone(String? value) {
-    if (value == null || value.trim().isEmpty) return 'Phone number is required';
-    if (!RegExp(r'^\+?[0-9]{8,15}$').hasMatch(cleanPhone(value))) {
-      return 'Phone must be 8-15 digits, optionally starting with +';
-    }
     return null;
   }
 
@@ -76,6 +68,4 @@ class Validators {
     if (years > 60) return 'At most 60';
     return null;
   }
-
-  static String cleanPhone(String value) => value.replaceAll(RegExp(r'[\s-]'), '');
 }
