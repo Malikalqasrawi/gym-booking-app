@@ -92,8 +92,16 @@ class SessionController extends ChangeNotifier {
   }
 
   /// Saves the phone number, e.g. right after signing up with Google.
-  Future<void> updatePhone(String phone) async {
-    final user = await _authApi.updatePhone(phone);
+  Future<void> updatePhone(String phone) => _setUser(_authApi.updatePhone(phone));
+
+  /// Confirms the phone number with the code texted to it.
+  Future<void> confirmPhone(String code) => _setUser(_authApi.confirmPhone(code));
+
+  /// Loads the user again, e.g. when the backend says the phone is already confirmed.
+  Future<void> reloadUser() => _setUser(_authApi.me());
+
+  Future<void> _setUser(Future<AppUser> request) async {
+    final user = await request;
     _user = user;
     await _storage.saveUser(user);
     notifyListeners();

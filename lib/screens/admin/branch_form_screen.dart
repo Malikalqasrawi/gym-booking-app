@@ -8,8 +8,9 @@ import '../../services/admin_api.dart';
 import '../../services/api_exception.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/messages.dart';
-import '../../utils/validators.dart';
+import '../../utils/phones.dart';
 import '../../widgets/map_tiles.dart';
+import '../../widgets/phone_number_field.dart';
 import '../../widgets/theme_toggle_button.dart';
 
 /// Adds a branch or edits one, with its location picked on the map. Pops with a message for the
@@ -32,7 +33,7 @@ class _BranchFormScreenState extends State<BranchFormScreen> {
   late final _name = TextEditingController(text: widget.branch?.name);
   late final _address = TextEditingController(text: widget.branch?.address);
   late final _city = TextEditingController(text: widget.branch?.city ?? 'Amman');
-  late final _phone = TextEditingController(text: widget.branch?.phone);
+  late final _phone = Phones.controller(widget.branch?.phone);
   late TimeOfDay _opening = _parse(widget.branch?.openingTime ?? '06:00');
   late TimeOfDay _closing = _parse(widget.branch?.closingTime ?? '23:00');
   late LatLng _position = widget.branch?.position ?? _amman;
@@ -42,9 +43,10 @@ class _BranchFormScreenState extends State<BranchFormScreen> {
 
   @override
   void dispose() {
-    for (final controller in [_name, _address, _city, _phone]) {
+    for (final controller in [_name, _address, _city]) {
       controller.dispose();
     }
+    _phone.dispose();
     super.dispose();
   }
 
@@ -94,7 +96,7 @@ class _BranchFormScreenState extends State<BranchFormScreen> {
       address: _address.text,
       city: _city.text,
       position: _position,
-      phone: Validators.cleanPhone(_phone.text),
+      phone: _phone.value.nsn.isEmpty ? '' : _phone.value.international,
       openingTime: _format(_opening),
       closingTime: _format(_closing),
     );
@@ -202,12 +204,7 @@ class _BranchFormScreenState extends State<BranchFormScreen> {
                 decoration: AppTheme.input(context, label: 'City', icon: Icons.location_city_outlined),
               ),
               const SizedBox(height: 12),
-              TextFormField(
-                controller: _phone,
-                keyboardType: TextInputType.phone,
-                validator: (value) => (value == null || value.trim().isEmpty) ? null : Validators.phone(value),
-                decoration: AppTheme.input(context, label: 'Phone (optional)', icon: Icons.phone_outlined),
-              ),
+              PhoneNumberField(controller: _phone, label: 'Phone (optional)', mobileOnly: false, isRequired: false),
               section('Opening hours'),
               Row(
                 children: [

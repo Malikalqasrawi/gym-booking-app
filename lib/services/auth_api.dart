@@ -181,8 +181,21 @@ class AuthApi {
   Future<void> disableTwoFactor({required String password, required String code}) =>
       _client.post('/api/users/me/2fa/disable', {'password': password, 'code': code});
 
+  /// [phone] in international format. A new number has to be confirmed again.
   Future<AppUser> updatePhone(String phone) async {
     final json = await _client.put('/api/users/me/phone', {'phone': phone});
+    return AppUser.fromJson(json);
+  }
+
+  /// Texts a code to the user's phone number. Returns how many seconds until another can be sent.
+  Future<int> sendPhoneCode() async {
+    final json = await _client.post('/api/users/me/phone/code', {});
+    return (json['resendAfterSeconds'] as num?)?.toInt() ?? 60;
+  }
+
+  /// Confirms the phone number with the texted code.
+  Future<AppUser> confirmPhone(String code) async {
+    final json = await _client.post('/api/users/me/phone/confirm', {'code': code});
     return AppUser.fromJson(json);
   }
 

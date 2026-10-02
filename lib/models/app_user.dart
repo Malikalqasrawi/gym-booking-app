@@ -15,7 +15,11 @@ class AppUser {
   final int id;
   final String fullName;
   final String email;
+  /// In international format, e.g. +962791234567.
   final String phone;
+
+  /// Confirmed with a code sent by SMS. Members need this before their first booking.
+  final bool phoneVerified;
   final UserRole role;
   final String title;
   final bool twoFactorEnabled;
@@ -28,6 +32,7 @@ class AppUser {
     required this.fullName,
     required this.email,
     required this.phone,
+    this.phoneVerified = false,
     required this.role,
     required this.title,
     this.twoFactorEnabled = false,
@@ -42,11 +47,15 @@ class AppUser {
   /// A member who signed up with Google, which doesn't share phone numbers.
   bool get needsPhone => role == UserRole.member && phone.isEmpty;
 
+  /// Members confirm their number by SMS before booking.
+  bool get mustConfirmPhone => role == UserRole.member && !phoneVerified;
+
   AppUser withTwoFactor(bool enabled) => AppUser(
         id: id,
         fullName: fullName,
         email: email,
         phone: phone,
+        phoneVerified: phoneVerified,
         role: role,
         title: title,
         twoFactorEnabled: enabled,
@@ -59,6 +68,7 @@ class AppUser {
       fullName: json['fullName'] as String,
       email: json['email'] as String,
       phone: (json['phone'] as String?) ?? '',
+      phoneVerified: (json['phoneVerified'] as bool?) ?? false,
       role: UserRole.fromJson(json['role'] as String),
       title: (json['title'] as String?) ?? '',
       twoFactorEnabled: (json['twoFactorEnabled'] as bool?) ?? false,
@@ -71,6 +81,7 @@ class AppUser {
         'fullName': fullName,
         'email': email,
         'phone': phone,
+        'phoneVerified': phoneVerified,
         'role': role.name.toUpperCase(),
         'title': title,
         'twoFactorEnabled': twoFactorEnabled,

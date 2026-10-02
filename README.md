@@ -31,7 +31,8 @@ A Flutter app for booking personal-training sessions in a gym chain. Find a bran
 - Sign up with an email verification code, or with Google in one tap (the app then asks for a phone number once), then stay logged in for 30 days (the tokens are stored encrypted, and the 15-minute access token is renewed in the background). Forgot the password? Reset it with a code sent by email.
 - See all 5 branches on an OpenStreetMap map, then the trainers at a branch, filtered by category, gender and price.
 - Open a trainer's profile: experience, certifications, languages, weekly schedule.
-- Pick a date, a duration (30 to 90 min) and a free start time, and send a request.
+- Phone numbers have a country picker (Jordan first) and are checked against that country's rules, so a Jordanian mobile must start with 077, 078 or 079.
+- Pick a date, a duration (30 to 90 min) and a free start time, and send a request. Before the first request, the member confirms their phone number with a 6-digit code sent by SMS (again after changing it in Profile).
 - Once the trainer accepts, pay with Stripe's own payment screen (card details never touch our servers).
 - Follow everything in **My bookings**: waiting, awaiting payment (with the deadline), confirmed, with receipts and refunds.
 - If the gym cancels a session, the home screen says so, with the reason and the refund, until dismissed.
@@ -48,7 +49,7 @@ A Flutter app for booking personal-training sessions in a gym chain. Find a bran
 - Add and edit branches, with opening hours and the location picked by tapping the map.
 - Log in with a password and a code from an authenticator app. The first login walks through scanning the QR code and saving the recovery codes.
 
-**Everyone:** a bottom navigation bar with tabs for their role and a Profile tab (change password, two-factor authentication, log out of all devices), light and dark mode, clear error messages when the network or server is down, pull to refresh. Members and trainers can turn on two-factor authentication with an authenticator app such as Google Authenticator, log in with a recovery code when the phone isn't at hand, and move it to a new phone.
+**Everyone:** a bottom navigation bar with tabs for their role and a Profile tab (phone number, change password, two-factor authentication, log out of all devices), light and dark mode, clear error messages when the network or server is down, pull to refresh. Members and trainers can turn on two-factor authentication with an authenticator app such as Google Authenticator, log in with a recovery code when the phone isn't at hand, and move it to a new phone.
 
 ## Architecture
 
@@ -81,6 +82,7 @@ flowchart TD
 | Maps | flutter_map + latlong2, OpenStreetMap tiles |
 | Payments | flutter_stripe (PaymentSheet) |
 | Two-factor setup | qr_flutter (the QR code for the authenticator app) |
+| Phone numbers | phone_form_field (country picker and each country's number rules) |
 | Google sign-in | google_sign_in (Android Credential Manager, Google Sign-In on iOS) |
 | Quality | flutter_lints (analysis_options.yaml), unit + widget tests, GitHub Actions |
 
@@ -96,7 +98,7 @@ flowchart TD
    ```
    The emulator reaches your computer at `10.0.2.2`, which is already set in `lib/config/api_config.dart`. For a real phone, put your computer's Wi-Fi IP there.
 3. **Log in:**
-   - Member: sign up in the app. With the backend in console mode, the verification code is printed in the backend's log.
+   - Member: sign up in the app. With the backend in console mode, the verification code is printed in the backend's log. So is the SMS code for the phone number, until Twilio is set up in the backend.
    - Trainer: `sara.trainer@gym.com` / `Trainer1234` (all 22 demo trainers use this password).
    - Admin: `admin@gym.com` with the password set in the backend. The first login asks you to scan a QR code with an authenticator app on your phone.
 4. **Pay** (Stripe test mode): card `4242 4242 4242 4242`, any future date, any CVC.
@@ -118,7 +120,7 @@ flutter analyze   # lint rules from analysis_options.yaml
 flutter test      # unit + widget tests
 ```
 
-The tests cover booking JSON parsing (payment deadline, receipts, refunds), the admin models (trainers, bookings, blocked times, branches), the home-screen cancellation notices, money and date formatting, form validators, the API client's token renewal (one shared refresh, logout when refused), the two-factor login steps, Google sign-in and the phone number afterwards, and widget tests (password reset, tab switching, two-factor setup and recovery codes, the Google button without client IDs). GitHub Actions runs both commands on every push and pull request.
+The tests cover booking JSON parsing (payment deadline, receipts, refunds), the admin models (trainers, bookings, blocked times, branches), the home-screen cancellation notices, money and date formatting, form validators, the API client's token renewal (one shared refresh, logout when refused), the two-factor login steps, Google sign-in and the phone number afterwards, phone numbers by country and the SMS code, and widget tests (password reset, tab switching, two-factor setup and recovery codes, the Google button without client IDs, the phone field with its country picker). GitHub Actions runs both commands on every push and pull request.
 
 ## Project structure
 
@@ -131,7 +133,7 @@ lib/
 ├── screens/    admin, auth, booking flow (map, trainers, profile, time), bookings, home, trainer
 ├── widgets/    shared widgets (BookingCard, TrainerAvatar, LoadError, ...)
 ├── theme/      Material 3 light and dark themes
-└── utils/      dates (gym time zone), money (JOD), validators, messages
+└── utils/      dates (gym time zone), money (JOD), phone numbers, validators, messages
 ```
 
 ## Roadmap
@@ -145,6 +147,7 @@ lib/
 - [x] Sessions that renew themselves, change password, log out of all devices
 - [x] Two-factor authentication with an authenticator app
 - [x] Google sign-in for members
+- [x] Phone numbers by country, confirmed by SMS
 
 ## License
 

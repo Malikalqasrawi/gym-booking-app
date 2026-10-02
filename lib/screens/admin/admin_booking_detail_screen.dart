@@ -8,6 +8,7 @@ import '../../services/api_exception.dart';
 import '../../utils/dates.dart';
 import '../../utils/messages.dart';
 import '../../utils/money.dart';
+import '../../utils/phones.dart';
 import '../../widgets/booking_card.dart';
 import '../../widgets/load_error.dart';
 import '../../widgets/theme_toggle_button.dart';
@@ -114,7 +115,7 @@ class _AdminBookingDetailScreenState extends State<AdminBookingDetailScreen> {
         section('Member'),
         _Info(icon: Icons.person_outline, text: b.memberName),
         _Info(icon: Icons.email_outlined, text: admin.memberEmail),
-        if (admin.memberPhone.isNotEmpty) _Info(icon: Icons.phone_outlined, text: admin.memberPhone),
+        if (admin.memberPhone.isNotEmpty) _Info(icon: Icons.phone_outlined, text: Phones.display(admin.memberPhone)),
         section('Trainer'),
         _Info(icon: Icons.sports_gymnastics, text: b.trainerName),
         _Info(icon: Icons.email_outlined, text: admin.trainerEmail),

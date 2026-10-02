@@ -10,8 +10,10 @@ import '../../services/api_exception.dart';
 import '../../services/booking_api.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/messages.dart';
+import '../../utils/phones.dart';
 import '../../utils/validators.dart';
 import '../../widgets/load_error.dart';
+import '../../widgets/phone_number_field.dart';
 import '../../widgets/theme_toggle_button.dart';
 
 /// Adds a trainer (sending them an invite) or edits an existing one. Pops with the saved trainer.
@@ -31,7 +33,7 @@ class _TrainerFormScreenState extends State<TrainerFormScreen> {
 
   late final _name = TextEditingController(text: widget.trainer?.fullName);
   late final _email = TextEditingController(text: widget.trainer?.email);
-  late final _phone = TextEditingController(text: widget.trainer?.phone);
+  late final _phone = Phones.controller(widget.trainer?.phone);
   late final _specialty = TextEditingController(text: widget.trainer?.specialty);
   late final _rate = TextEditingController(text: _number(widget.trainer?.hourlyRate));
   late final _years = TextEditingController(text: widget.trainer?.yearsOfExperience.toString());
@@ -57,10 +59,11 @@ class _TrainerFormScreenState extends State<TrainerFormScreen> {
   @override
   void dispose() {
     for (final controller in [
-      _name, _email, _phone, _specialty, _rate, _years, _languages, _bio, _tags, _certifications,
+      _name, _email, _specialty, _rate, _years, _languages, _bio, _tags, _certifications,
     ]) {
       controller.dispose();
     }
+    _phone.dispose();
     super.dispose();
   }
 
@@ -81,7 +84,7 @@ class _TrainerFormScreenState extends State<TrainerFormScreen> {
     final draft = TrainerDraft(
       fullName: _name.text.trim(),
       email: _email.text.trim(),
-      phone: Validators.cleanPhone(_phone.text),
+      phone: _phone.value.international,
       branchId: _branchId!,
       category: _category!,
       gender: _gender!,
@@ -186,13 +189,7 @@ class _TrainerFormScreenState extends State<TrainerFormScreen> {
               decoration: AppTheme.input(context, label: 'Email', icon: Icons.email_outlined),
             ),
             const SizedBox(height: 12),
-            TextFormField(
-              controller: _phone,
-              keyboardType: TextInputType.phone,
-              textInputAction: TextInputAction.next,
-              validator: Validators.phone,
-              decoration: AppTheme.input(context, label: 'Phone', icon: Icons.phone_outlined),
-            ),
+            PhoneNumberField(controller: _phone, label: 'Phone', textInputAction: TextInputAction.next),
             section('Branch'),
             Wrap(
               spacing: 8,

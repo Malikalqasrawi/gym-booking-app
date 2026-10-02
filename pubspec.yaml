@@ -19,6 +19,9 @@ dependencies:
   flutter_stripe: ^14.1.0
   qr_flutter: ^4.1.0
   google_sign_in: ^7.2.0
+  # Phone field with a country picker. 11.x moved to the new material_ui package, which this app
+  # doesn't use yet, so stay on 10.x.
+  phone_form_field: ^10.0.18
 
 dev_dependencies:
   flutter_test:

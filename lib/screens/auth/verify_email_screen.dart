@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -149,14 +148,6 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                     ),
                   ],
                 ),
-                if (kDebugMode) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    'Debug build: with console email mode, the code is printed in the backend log.',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: muted),
-                  ),
-                ],
               ],
             ),
           ),

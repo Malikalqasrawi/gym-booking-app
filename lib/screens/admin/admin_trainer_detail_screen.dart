@@ -7,6 +7,7 @@ import '../../services/api_exception.dart';
 import '../../utils/dates.dart';
 import '../../utils/messages.dart';
 import '../../utils/money.dart';
+import '../../utils/phones.dart';
 import '../../widgets/load_error.dart';
 import '../../widgets/theme_toggle_button.dart';
 import '../../widgets/trainer_avatar.dart';
@@ -161,7 +162,7 @@ class _AdminTrainerDetailScreenState extends State<AdminTrainerDetailScreen> {
           ),
         const Divider(height: 32),
         _Info(icon: Icons.email_outlined, text: trainer.email),
-        _Info(icon: Icons.phone_outlined, text: trainer.phone),
+        _Info(icon: Icons.phone_outlined, text: Phones.display(trainer.phone)),
         _Info(icon: Icons.location_on_outlined, text: trainer.branchName ?? 'No branch'),
         _Info(icon: Icons.category_outlined, text: trainer.category?.label ?? 'No category'),
         _Info(
