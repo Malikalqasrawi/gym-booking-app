@@ -91,6 +91,14 @@ class SessionController extends ChangeNotifier {
     await startSession(result);
   }
 
+  /// Saves the phone number, e.g. right after signing up with Google.
+  Future<void> updatePhone(String phone) async {
+    final user = await _authApi.updatePhone(phone);
+    _user = user;
+    await _storage.saveUser(user);
+    notifyListeners();
+  }
+
   /// Updates the saved user after two-factor authentication was turned on or off.
   Future<void> setTwoFactorEnabled(bool enabled) async {
     final user = _user?.withTwoFactor(enabled);

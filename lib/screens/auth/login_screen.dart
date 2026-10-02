@@ -14,8 +14,7 @@ import '../../widgets/social_sign_in_buttons.dart';
 import '../../widgets/theme_toggle_button.dart';
 import 'accept_invite_screen.dart';
 import 'forgot_password_screen.dart';
-import 'two_factor_code_screen.dart';
-import 'two_factor_setup_screen.dart';
+import 'login_flow.dart';
 import 'verify_email_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -56,23 +55,13 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final authApi = context.read<AuthApi>();
-    final session = context.read<SessionController>();
     final email = _emailController.text.trim();
 
     setState(() => _loading = true);
     try {
       final result = await authApi.login(email: email, password: _passwordController.text);
-      switch (result) {
-        case LoggedIn(session: final newSession):
-          await session.startSession(newSession); // AuthGate then shows the app
-        case TwoFactorChallenge(:final challengeToken, setupRequired: true):
-          await _setUpTwoFactor(authApi, session, challengeToken);
-        case TwoFactorChallenge(:final challengeToken):
-          if (!mounted) return;
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (_) => TwoFactorCodeScreen(challengeToken: challengeToken),
-          ));
-      }
+      if (!mounted) return;
+      await continueLogin(context, result);
     } on ApiException catch (e) {
       if (!mounted) return;
       if (e.code == 'EMAIL_NOT_VERIFIED') {
@@ -83,29 +72,6 @@ class _LoginScreenState extends State<LoginScreen> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
-  }
-
-  /// An admin's first login: connect an authenticator app, then the session starts.
-  Future<void> _setUpTwoFactor(AuthApi authApi, SessionController session, String challengeToken) async {
-    final setup = await authApi.startLoginSetup(challengeToken);
-    if (!mounted) return;
-    final navigator = Navigator.of(context);
-    AuthResult? newSession;
-    navigator.push(MaterialPageRoute(
-      builder: (_) => TwoFactorSetupScreen(
-        setup: setup,
-        reason: 'Admins must use two-factor authentication. Set it up once to finish logging in.',
-        confirm: (code) async {
-          final result = await authApi.confirmLoginSetup(challengeToken: challengeToken, code: code);
-          newSession = result.session;
-          return result.recoveryCodes;
-        },
-        onDone: (_) async {
-          await session.startSession(newSession!);
-          navigator.popUntil((route) => route.isFirst); // AuthGate, below, now shows the app
-        },
-      ),
-    ));
   }
 
   /// The account exists but isn't verified: send a fresh code and open the verification screen.

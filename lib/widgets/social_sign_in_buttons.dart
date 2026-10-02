@@ -1,13 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../screens/auth/login_flow.dart';
+import '../services/api_exception.dart';
+import '../services/auth_api.dart';
+import '../services/google_auth.dart';
 import '../utils/messages.dart';
 
-// TODO: implement Google sign-in.
-
-/// Placeholder Google and Apple sign-in buttons. Apple sign-in requires a paid
-/// Apple Developer account.
-class SocialSignInButtons extends StatelessWidget {
+/// "Continue with" Google and Apple. Google signs members in or up; Apple sign-in needs a paid
+/// Apple Developer account, so its button only says so.
+class SocialSignInButtons extends StatefulWidget {
   const SocialSignInButtons({super.key});
+
+  @override
+  State<SocialSignInButtons> createState() => _SocialSignInButtonsState();
+}
+
+class _SocialSignInButtonsState extends State<SocialSignInButtons> {
+  bool _busy = false;
+
+  Future<void> _google() async {
+    if (!GoogleAuth.isConfigured) {
+      showInfo(context, "Google sign-in isn't set up in this build of the app.");
+      return;
+    }
+    final authApi = context.read<AuthApi>();
+    setState(() => _busy = true);
+    try {
+      final idToken = await GoogleAuth.idToken();
+      if (idToken == null || !mounted) return; // the account picker was closed
+      final result = await authApi.loginWithGoogle(idToken);
+      if (!mounted) return;
+      await continueLogin(context, result);
+    } on GoogleAuthException catch (e) {
+      if (mounted) showError(context, e.message);
+    } on ApiException catch (e) {
+      if (mounted) showError(context, e.message);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +62,11 @@ class SocialSignInButtons extends StatelessWidget {
           children: [
             Expanded(
               child: OutlinedButton.icon(
-                icon: const Icon(Icons.g_mobiledata, size: 30),
+                icon: _busy
+                    ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Icon(Icons.g_mobiledata, size: 30),
                 label: const Text('Google'),
-                onPressed: () => showInfo(context, 'Google sign-in is coming soon'),
+                onPressed: _busy ? null : _google,
               ),
             ),
             const SizedBox(width: 12),

@@ -9,6 +9,7 @@ import '../../utils/validators.dart';
 import '../../widgets/auth_header.dart';
 import '../../widgets/auth_switch_prompt.dart';
 import '../../widgets/password_field.dart';
+import '../../widgets/social_sign_in_buttons.dart';
 import '../../widgets/theme_toggle_button.dart';
 import 'verify_email_screen.dart';
 
@@ -144,7 +145,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           )
                         : const Text('Sign up'),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 20),
+                  const SocialSignInButtons(),
+                  const SizedBox(height: 16),
                   AuthSwitchPrompt(
                     question: 'Already have an account?',
                     actionLabel: 'Log in',

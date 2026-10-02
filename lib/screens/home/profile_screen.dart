@@ -14,7 +14,23 @@ import 'two_factor_password_screen.dart';
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
-  Future<void> _changePassword(BuildContext context) async {
+  /// Members who signed up with Google have no password until they set one with "Forgot password".
+  Future<void> _setPasswordFirst(BuildContext context, String reason) {
+    return showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('No password yet'),
+        content: Text('You signed up with Google, so your account has no password. $reason '
+            'To set one, log out and tap "Forgot password?" on the login screen. We will email you a code.'),
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
+      ),
+    );
+  }
+
+  Future<void> _changePassword(BuildContext context, AppUser user) async {
+    if (!user.hasPassword) {
+      return _setPasswordFirst(context, 'You can keep logging in with Google.');
+    }
     final changed = await Navigator.of(context).push<bool>(
       MaterialPageRoute(builder: (_) => const ChangePasswordScreen()),
     );
@@ -25,6 +41,9 @@ class ProfileScreen extends StatelessWidget {
 
   /// Off: turn it on. On: set up a new phone, or turn it off (not for admins).
   Future<void> _twoFactor(BuildContext context, AppUser user) async {
+    if (!user.hasPassword) {
+      return _setPasswordFirst(context, 'Changing two-factor authentication asks for your password.');
+    }
     var change = TwoFactorChange.turnOn;
     if (user.twoFactorEnabled) {
       final picked = await showModalBottomSheet<TwoFactorChange>(
@@ -108,7 +127,7 @@ class ProfileScreen extends StatelessWidget {
               leading: const Icon(Icons.password),
               title: const Text('Change password'),
               trailing: const Icon(Icons.chevron_right),
-              onTap: () => _changePassword(context),
+              onTap: () => _changePassword(context, user),
             ),
             const Divider(height: 1),
             ListTile(

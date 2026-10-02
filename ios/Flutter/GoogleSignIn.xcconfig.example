@@ -1,0 +1,3 @@
+// Copy to GoogleSignIn.xcconfig (git-ignored). The iOS client ID backwards: if the ID is
+// 123456789-ios.apps.googleusercontent.com, this is com.googleusercontent.apps.123456789-ios
+GOOGLE_REVERSED_CLIENT_ID=com.googleusercontent.apps.123456789-ios

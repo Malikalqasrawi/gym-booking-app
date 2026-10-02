@@ -28,7 +28,7 @@ A Flutter app for booking personal-training sessions in a gym chain. Find a bran
 ## What it does
 
 **Members**
-- Sign up with an email verification code, then stay logged in for 30 days (the tokens are stored encrypted, and the 15-minute access token is renewed in the background). Forgot the password? Reset it with a code sent by email.
+- Sign up with an email verification code, or with Google in one tap (the app then asks for a phone number once), then stay logged in for 30 days (the tokens are stored encrypted, and the 15-minute access token is renewed in the background). Forgot the password? Reset it with a code sent by email.
 - See all 5 branches on an OpenStreetMap map, then the trainers at a branch, filtered by category, gender and price.
 - Open a trainer's profile: experience, certifications, languages, weekly schedule.
 - Pick a date, a duration (30 to 90 min) and a free start time, and send a request.
@@ -81,6 +81,7 @@ flowchart TD
 | Maps | flutter_map + latlong2, OpenStreetMap tiles |
 | Payments | flutter_stripe (PaymentSheet) |
 | Two-factor setup | qr_flutter (the QR code for the authenticator app) |
+| Google sign-in | google_sign_in (Android Credential Manager, Google Sign-In on iOS) |
 | Quality | flutter_lints (analysis_options.yaml), unit + widget tests, GitHub Actions |
 
 ## Getting started
@@ -100,6 +101,16 @@ flowchart TD
    - Admin: `admin@gym.com` with the password set in the backend. The first login asks you to scan a QR code with an authenticator app on your phone.
 4. **Pay** (Stripe test mode): card `4242 4242 4242 4242`, any future date, any CVC.
 
+### Google sign-in (optional)
+
+Create the Google Cloud clients as described in the [backend README](https://github.com/Malikalqasrawi/gym-booking-backend#google-sign-in-optional). Then, in this project:
+
+1. Copy `google_sign_in.example.json` to `google_sign_in.json` (git-ignored) and put in the Web and iOS client IDs.
+2. Run with the IDs: `flutter run --dart-define-from-file=google_sign_in.json`. In Android Studio, add `--dart-define-from-file=google_sign_in.json` to **Run > Edit Configurations > Additional run args**.
+3. For iOS, copy `ios/Flutter/GoogleSignIn.xcconfig.example` to `ios/Flutter/GoogleSignIn.xcconfig` (git-ignored) and put in the reversed iOS client ID, which Google uses to return to the app.
+
+Android needs no client ID in the app: Google recognizes it by its package name and the SHA-1 of the signing key. Without the IDs, the Google button says that Google sign-in isn't set up.
+
 ## Tests
 
 ```bash
@@ -107,15 +118,15 @@ flutter analyze   # lint rules from analysis_options.yaml
 flutter test      # unit + widget tests
 ```
 
-The tests cover booking JSON parsing (payment deadline, receipts, refunds), the admin models (trainers, bookings, blocked times, branches), the home-screen cancellation notices, money and date formatting, form validators, the API client's token renewal (one shared refresh, logout when refused), the two-factor login steps, and widget tests (password reset, tab switching, two-factor setup and recovery codes). GitHub Actions runs both commands on every push and pull request.
+The tests cover booking JSON parsing (payment deadline, receipts, refunds), the admin models (trainers, bookings, blocked times, branches), the home-screen cancellation notices, money and date formatting, form validators, the API client's token renewal (one shared refresh, logout when refused), the two-factor login steps, Google sign-in and the phone number afterwards, and widget tests (password reset, tab switching, two-factor setup and recovery codes, the Google button without client IDs). GitHub Actions runs both commands on every push and pull request.
 
 ## Project structure
 
 ```
 lib/
-├── config/     backend address and timeouts
+├── config/     backend address, timeouts and Google client IDs
 ├── models/     Booking, Trainer, Branch, PaymentStart... (fromJson)
-├── services/   ApiClient, AuthApi, BookingApi, AdminApi, secure token storage, StripeCheckout
+├── services/   ApiClient, AuthApi, BookingApi, AdminApi, GoogleAuth, secure token storage, StripeCheckout
 ├── state/      SessionController (who is logged in), ThemeController (light/dark)
 ├── screens/    admin, auth, booking flow (map, trainers, profile, time), bookings, home, trainer
 ├── widgets/    shared widgets (BookingCard, TrainerAvatar, LoadError, ...)
@@ -133,7 +144,7 @@ lib/
 - [x] Admin: bookings overview, blocked times, branches
 - [x] Sessions that renew themselves, change password, log out of all devices
 - [x] Two-factor authentication with an authenticator app
-- [ ] Google sign-in
+- [x] Google sign-in for members
 
 ## License
 
