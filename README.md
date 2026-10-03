@@ -13,17 +13,19 @@ A Flutter app for booking personal-training sessions in a gym chain. Find a bran
 
 ---
 
-<!--
 ## Screenshots
 
-| Home | Branch map | Trainers + filters | Trainer profile |
-|---|---|---|---|
-| <img src="docs/screenshots/home.png" width="200" alt="Member home screen"> | <img src="docs/screenshots/map.png" width="200" alt="Branch map"> | <img src="docs/screenshots/trainers.png" width="200" alt="Trainer list with filters"> | <img src="docs/screenshots/trainer-profile.png" width="200" alt="Trainer profile"> |
+| Home | Branch map | Trainers + filters |
+|---|---|---|
+| <img src="docs/screenshots/home.png" width="250" alt="Member home screen"> | <img src="docs/screenshots/map.png" width="250" alt="Branch map"> | <img src="docs/screenshots/trainers.png" width="250" alt="Trainer list with filters"> |
 
-| Pay with Stripe | My bookings | Trainer home | Dark mode |
-|---|---|---|---|
-| <img src="docs/screenshots/checkout.png" width="200" alt="Checkout sheet"> | <img src="docs/screenshots/my-bookings.png" width="200" alt="My bookings"> | <img src="docs/screenshots/trainer-home.png" width="200" alt="Trainer home"> | <img src="docs/screenshots/dark-mode.png" width="200" alt="Dark mode"> |
--->
+| Trainer profile | Pay with Stripe | My bookings |
+|---|---|---|
+| <img src="docs/screenshots/trainer-profile.png" width="250" alt="Trainer profile with reviews"> | <img src="docs/screenshots/checkout.png" width="250" alt="Checkout sheet"> | <img src="docs/screenshots/my-bookings.png" width="250" alt="My bookings"> |
+
+| Rate a session | Trainer home | Dark mode |
+|---|---|---|
+| <img src="docs/screenshots/rate-session.png" width="250" alt="Rating a session"> | <img src="docs/screenshots/trainer-home.png" width="250" alt="Trainer home"> | <img src="docs/screenshots/dark-mode.png" width="250" alt="Dark mode"> |
 
 ## What it does
 
