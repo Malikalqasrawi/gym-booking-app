@@ -49,6 +49,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     final authApi = context.read<AuthApi>();
     final email = _emailController.text.trim();
+    final password = _passwordController.text;
 
     setState(() => _loading = true);
     try {
@@ -56,13 +57,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
         fullName: _nameController.text.trim(),
         email: email,
         phone: _phone.value.international,
-        password: _passwordController.text,
+        password: password,
       );
       if (!mounted) return;
 
       showInfo(context, message);
       Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => VerifyEmailScreen(email: email)),
+        MaterialPageRoute(builder: (_) => VerifyEmailScreen(email: email, password: password)),
       );
     } on ApiException catch (e) {
       if (mounted) showError(context, e.message);

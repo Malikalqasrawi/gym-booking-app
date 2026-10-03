@@ -56,16 +56,17 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final authApi = context.read<AuthApi>();
     final email = _emailController.text.trim();
+    final password = _passwordController.text;
 
     setState(() => _loading = true);
     try {
-      final result = await authApi.login(email: email, password: _passwordController.text);
+      final result = await authApi.login(email: email, password: password);
       if (!mounted) return;
       await continueLogin(context, result);
     } on ApiException catch (e) {
       if (!mounted) return;
       if (e.code == 'EMAIL_NOT_VERIFIED') {
-        await _goVerify(authApi, email);
+        await _goVerify(authApi, email, password);
       } else {
         showError(context, e.message);
       }
@@ -75,7 +76,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   /// The account exists but isn't verified: send a fresh code and open the verification screen.
-  Future<void> _goVerify(AuthApi authApi, String email) async {
+  /// The password was just checked by the login, and the verification needs it again.
+  Future<void> _goVerify(AuthApi authApi, String email, String password) async {
     var info = 'Please verify your email first. We sent you a new code.';
     try {
       await authApi.resendCode(email);
@@ -90,7 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
     showInfo(context, info);
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => VerifyEmailScreen(email: email)),
+      MaterialPageRoute(builder: (_) => VerifyEmailScreen(email: email, password: password)),
     );
   }
 

@@ -14,9 +14,12 @@ import '../../widgets/auth_header.dart';
 import '../../widgets/theme_toggle_button.dart';
 
 class VerifyEmailScreen extends StatefulWidget {
-  const VerifyEmailScreen({super.key, required this.email});
+  const VerifyEmailScreen({super.key, required this.email, required this.password});
 
   final String email;
+
+  /// The password from sign-up or login, which the backend checks together with the code.
+  final String password;
 
   @override
   State<VerifyEmailScreen> createState() => _VerifyEmailScreenState();
@@ -70,6 +73,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
       final result = await authApi.verifyEmail(
         email: widget.email,
         code: _codeController.text,
+        password: widget.password,
       );
       await session.startSession(result);
       // AuthGate, below this route, now shows the app.
