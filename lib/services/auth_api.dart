@@ -62,8 +62,9 @@ class AuthApi {
     return json['message'] as String;
   }
 
-  Future<AuthResult> verifyEmail({required String email, required String code}) async {
-    final json = await _client.post('/api/auth/verify', {'email': email, 'code': code});
+  /// The password chosen at sign-up goes along, so the code only verifies the sign-up it was sent for.
+  Future<AuthResult> verifyEmail({required String email, required String code, required String password}) async {
+    final json = await _client.post('/api/auth/verify', {'email': email, 'code': code, 'password': password});
     return AuthResult.fromJson(json);
   }
 

@@ -1,9 +1,13 @@
 /// Client-side form validation mirroring the backend's request rules.
 /// The backend validates again. Phone numbers are checked by PhoneNumberField.
 class Validators {
+  /// Letters in any alphabet (e.g. Arabic), spaces, dots, apostrophes and hyphens, like the backend.
+  static final _name = RegExp(r"^[\p{L}\p{M}][\p{L}\p{M} .'-]*$", unicode: true);
+
   static String? fullName(String? value) {
     if (value == null || value.trim().isEmpty) return 'Full name is required';
     if (value.trim().length > 100) return 'Full name is too long';
+    if (!_name.hasMatch(value.trim())) return 'Use letters only in your name';
     return null;
   }
 

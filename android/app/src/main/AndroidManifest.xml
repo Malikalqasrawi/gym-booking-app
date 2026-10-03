@@ -1,10 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET"/>
 
-    <!-- TODO: remove usesCleartextTraffic once the API is served over HTTPS. -->
+    <!-- Release builds only talk HTTPS. Debug and profile builds also allow plain http (see their
+         manifests), for the backend running on this computer. -->
     <application
         android:allowBackup="false"
-        android:usesCleartextTraffic="true"
         android:label="gym_booking"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">

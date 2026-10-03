@@ -5,14 +5,35 @@ on:
     branches: [main]
   pull_request:
 
+# The token GitHub gives these jobs can only read the code.
+permissions:
+  contents: read
+
+# Actions are pinned to a commit, so a changed tag can't run different code here.
 jobs:
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09   # v5
+        with:
+          fetch-depth: 0
+
+      - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7   # v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: false
+
   analyze-and-test:
     name: Analyze and test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09   # v5
 
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2   # v2
         with:
           channel: stable
           cache: true

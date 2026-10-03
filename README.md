@@ -102,10 +102,10 @@ flowchart TD
    flutter pub get
    flutter run
    ```
-   The emulator reaches your computer at `10.0.2.2`, which is already set in `lib/config/api_config.dart`. For a real phone, put your computer's Wi-Fi IP there.
+   The emulator reaches your computer at `10.0.2.2`, the default in `lib/config/api_config.dart`. For a phone on USB, run `adb reverse tcp:8080 tcp:8080` and add `--dart-define=API_URL=http://localhost:8080`. Plain `http` only works in debug builds; a release build needs the backend on HTTPS: `flutter build apk --dart-define=API_URL=https://your-server`.
 3. **Log in:**
    - Member: sign up in the app. With the backend in console mode, the verification code is printed in the backend's log. So is the SMS code for the phone number, until Twilio is set up in the backend.
-   - Trainer: `sara.trainer@gym.com` / `Trainer1234` (all 22 demo trainers use this password).
+   - Trainer: `sara.trainer@gym.com` / `Trainer1234` (all 22 demo trainers use this password; they exist when the backend has `app.seed.demo-trainers=true`).
    - Admin: `admin@gym.com` with the password set in the backend. The first login asks you to scan a QR code with an authenticator app on your phone.
 4. **Pay** (Stripe test mode): card `4242 4242 4242 4242`, any future date, any CVC.
 
@@ -119,6 +119,10 @@ Create the Google Cloud clients as described in the [backend README](https://git
 
 Android needs no client ID in the app: Google recognizes it by its package name and the SHA-1 of the signing key. Without the IDs, the Google button says that Google sign-in isn't set up.
 
+### Release builds
+
+Release builds are signed with the key in `android/key.properties` (git-ignored, like the keystore itself), as described in [Flutter's Android release guide](https://docs.flutter.dev/deployment/android#sign-the-app). Without that file they are signed with the debug key, which is fine for trying a release build but not for publishing.
+
 ## Tests
 
 ```bash
@@ -126,7 +130,7 @@ flutter analyze   # lint rules from analysis_options.yaml
 flutter test      # unit + widget tests
 ```
 
-The tests cover booking JSON parsing (payment deadline, receipts, refunds), the admin models (trainers, bookings, blocked times, branches), the home screen (cancellation notices, "Book again", branch opening hours), reviews (JSON, ratings, which session to ask about, the rating sheet), money and date formatting, form validators, the API client's token renewal (one shared refresh, logout when refused), the two-factor login steps, Google sign-in and the phone number afterwards, phone numbers by country and the SMS code, and widget tests (password reset, tab switching, two-factor setup and recovery codes, the Google button without client IDs, the phone field with its country picker). GitHub Actions runs both commands on every push and pull request.
+The tests cover booking JSON parsing (payment deadline, receipts, refunds), the admin models (trainers, bookings, blocked times, branches), the home screen (cancellation notices, "Book again", branch opening hours), reviews (JSON, ratings, which session to ask about, the rating sheet), money and date formatting, form validators (including letters-only names), email verification sending the sign-up password, the API client's token renewal (one shared refresh, logout when refused), the two-factor login steps, Google sign-in and the phone number afterwards, phone numbers by country and the SMS code, and widget tests (password reset, tab switching, two-factor setup and recovery codes, the Google button without client IDs, the phone field with its country picker). GitHub Actions runs both commands and a gitleaks secret scan on every push and pull request, with actions pinned to commits and a read-only token.
 
 ## Project structure
 
